@@ -1,0 +1,122 @@
+[
+  {
+    "name": "company_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Foreign key to companies table"
+  },
+  {
+    "name": "metric_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Date when metrics were recorded"
+  },
+  {
+    "name": "revenue_arr",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Annual Recurring Revenue in USD"
+  },
+  {
+    "name": "revenue_monthly",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Monthly Recurring Revenue in USD"
+  },
+  {
+    "name": "revenue_growth_rate_monthly",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Month-over-month revenue growth rate (decimal)"
+  },
+  {
+    "name": "revenue_growth_rate_yearly",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Year-over-year revenue growth rate (decimal)"
+  },
+  {
+    "name": "customer_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Total number of customers"
+  },
+  {
+    "name": "customer_growth_rate",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Month-over-month customer growth rate (decimal)"
+  },
+  {
+    "name": "churn_rate_monthly",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Monthly customer churn rate (decimal)"
+  },
+  {
+    "name": "churn_rate_annual",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Annual customer churn rate (decimal)"
+  },
+  {
+    "name": "average_revenue_per_user",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Average revenue per user (ARPU) in USD"
+  },
+  {
+    "name": "customer_acquisition_cost",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Customer Acquisition Cost (CAC) in USD"
+  },
+  {
+    "name": "customer_lifetime_value",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Customer Lifetime Value (LTV) in USD"
+  },
+  {
+    "name": "ltv_cac_ratio",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "LTV to CAC ratio"
+  },
+  {
+    "name": "gross_margin",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Gross margin percentage (decimal)"
+  },
+  {
+    "name": "net_revenue_retention",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Net Revenue Retention rate (decimal)"
+  },
+  {
+    "name": "burn_rate_monthly",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Monthly cash burn rate in USD"
+  },
+  {
+    "name": "cash_runway_months",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Months of cash runway remaining"
+  },
+  {
+    "name": "monthly_active_users",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Monthly active users"
+  },
+  {
+    "name": "user_engagement_score",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "User engagement score (0-100)"
+  }
+]

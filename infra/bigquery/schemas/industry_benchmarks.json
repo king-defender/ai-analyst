@@ -1,0 +1,62 @@
+[
+  {
+    "name": "industry",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Industry category"
+  },
+  {
+    "name": "stage",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Funding stage"
+  },
+  {
+    "name": "metric_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Name of the benchmark metric"
+  },
+  {
+    "name": "percentile_10",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "10th percentile value"
+  },
+  {
+    "name": "percentile_25",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "25th percentile value"
+  },
+  {
+    "name": "percentile_50",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "50th percentile (median) value"
+  },
+  {
+    "name": "percentile_75",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "75th percentile value"
+  },
+  {
+    "name": "percentile_90",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "90th percentile value"
+  },
+  {
+    "name": "sample_size",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Number of companies in benchmark"
+  },
+  {
+    "name": "last_updated",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When benchmark was last calculated"
+  }
+]
