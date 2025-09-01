@@ -1,0 +1,93 @@
+# AI Analyst MVP - Environment variables and secrets
+
+# Build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# GCP
+*.json
+service-account*.json
+gcp-key*.json
+
+# Logs
+logs/
+*.log
+
+# Runtime
+.cache/
+.tmp/
+.temp/
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+.nyc_output
+
+# ML Models
+*.pkl
+*.h5
+*.onnx
+models/downloaded/
+
+# Data
+*.csv
+*.parquet
+*.db
+*.sqlite
+
+# Temporary files
+/tmp/
+*.tmp
