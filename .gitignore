@@ -90,4 +90,5 @@ models/downloaded/
 
 # Temporary files
 /tmp/
-*.tmp
+*.tmpbackend/venv/
+ml/venv/
