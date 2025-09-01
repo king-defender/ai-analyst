@@ -62,9 +62,12 @@ ehthumbs.db
 Thumbs.db
 
 # GCP
-*.json
 service-account*.json
 gcp-key*.json
+*-key.json
+
+# Exclude sample data JSON files from being ignored
+!sample_data/**/*.json
 
 # Logs
 logs/
