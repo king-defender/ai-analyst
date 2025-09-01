@@ -1,5 +1,11 @@
 # AI Analyst MVP - Environment variables and secrets
 
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
 # Build artifacts
 __pycache__/
 *.py[cod]
@@ -90,5 +96,4 @@ models/downloaded/
 
 # Temporary files
 /tmp/
-*.tmpbackend/venv/
-ml/venv/
+*.tmp
