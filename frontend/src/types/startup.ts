@@ -255,3 +255,16 @@ export interface InvestmentRecommendation {
   terms_suggestions: string[];
   next_steps: string[];
 }
+
+export interface MemoAppendix {
+  raw_data: any;
+  methodology: string;
+  assumptions: string[];
+  data_sources: string[];
+  confidence_scores: {
+    financial_analysis: number;
+    market_analysis: number;
+    team_assessment: number;
+    risk_analysis: number;
+  };
+}

@@ -1,7 +1,7 @@
 'use client';
 
-import { BenchmarkData, GrowthComparison } from '@/types/startup';
-import { BarChart, TrendingUp, Target, Users, DollarSign } from 'lucide-react';
+import { BenchmarkData } from '@/types/startup';
+import { BarChart, TrendingUp, Target, Users } from 'lucide-react';
 
 interface BenchmarkDisplayProps {
   data: BenchmarkData;

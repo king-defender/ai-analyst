@@ -1,7 +1,7 @@
 'use client';
 
 import { StartupData } from '@/types/startup';
-import { Building, Users, Calendar, DollarSign, TrendingUp, MapPin } from 'lucide-react';
+import { Building, Users, DollarSign, TrendingUp, MapPin } from 'lucide-react';
 
 interface StartupDataDisplayProps {
   data: StartupData;

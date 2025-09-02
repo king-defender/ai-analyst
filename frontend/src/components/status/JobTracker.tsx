@@ -11,6 +11,7 @@ export interface JobStatus {
   message?: string;
   created_at: string;
   updated_at: string;
+  result?: any;
 }
 
 interface JobTrackerProps {

@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import FileUpload from '../src/components/upload/FileUpload';
+import FileUpload from '../components/upload/FileUpload';
 
 describe('FileUpload Component', () => {
   const mockOnFileUpload = jest.fn();
@@ -39,7 +39,7 @@ describe('FileUpload Component', () => {
 
 describe('JobTracker Component', () => {
   test('renders loading state', () => {
-    const { JobTracker } = require('../src/components/status/JobTracker');
+    const { JobTracker } = require('../components/status/JobTracker');
     
     render(<JobTracker jobId="test-job-123" />);
     
@@ -103,7 +103,7 @@ describe('StartupDataDisplay Component', () => {
   };
 
   test('renders company overview', () => {
-    const { default: StartupDataDisplay } = require('../src/components/data/StartupDataDisplay');
+    const { default: StartupDataDisplay } = require('../components/data/StartupDataDisplay');
     
     render(<StartupDataDisplay data={mockStartupData} />);
     
@@ -114,7 +114,7 @@ describe('StartupDataDisplay Component', () => {
   });
 
   test('renders key metrics', () => {
-    const { default: StartupDataDisplay } = require('../src/components/data/StartupDataDisplay');
+    const { default: StartupDataDisplay } = require('../components/data/StartupDataDisplay');
     
     render(<StartupDataDisplay data={mockStartupData} />);
     
@@ -124,7 +124,7 @@ describe('StartupDataDisplay Component', () => {
   });
 
   test('renders team information', () => {
-    const { default: StartupDataDisplay } = require('../src/components/data/StartupDataDisplay');
+    const { default: StartupDataDisplay } = require('../components/data/StartupDataDisplay');
     
     render(<StartupDataDisplay data={mockStartupData} />);
     
@@ -136,7 +136,7 @@ describe('StartupDataDisplay Component', () => {
 
 describe('Utility Functions', () => {
   test('formatCurrency works correctly', () => {
-    const { formatCurrency } = require('../src/utils/format');
+    const { formatCurrency } = require('../utils/format');
     
     expect(formatCurrency(1000)).toBe('$1K');
     expect(formatCurrency(1000000)).toBe('$1.0M');
@@ -145,7 +145,7 @@ describe('Utility Functions', () => {
   });
 
   test('formatPercentage works correctly', () => {
-    const { formatPercentage } = require('../src/utils/format');
+    const { formatPercentage } = require('../utils/format');
     
     expect(formatPercentage(0.25)).toBe('25.0%');
     expect(formatPercentage(0.1)).toBe('10.0%');
@@ -153,7 +153,7 @@ describe('Utility Functions', () => {
   });
 
   test('getInitials works correctly', () => {
-    const { getInitials } = require('../src/utils/format');
+    const { getInitials } = require('../utils/format');
     
     expect(getInitials('John Doe')).toBe('JD');
     expect(getInitials('Sarah Michelle Chen')).toBe('SM');
@@ -163,14 +163,14 @@ describe('Utility Functions', () => {
 
 describe('API Client', () => {
   test('API client can be imported', () => {
-    const { apiClient } = require('../src/lib/api');
+    const { apiClient } = require('../lib/api');
     expect(apiClient).toBeDefined();
   });
 });
 
 describe('Hooks', () => {
   test('useFileUpload hook can be imported', () => {
-    const { useFileUpload } = require('../src/hooks/useFileUpload');
+    const { useFileUpload } = require('../hooks/useFileUpload');
     expect(useFileUpload).toBeDefined();
   });
 

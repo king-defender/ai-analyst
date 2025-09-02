@@ -9,7 +9,7 @@ import RiskDisplay from '@/components/risks/RiskDisplay';
 import MemoViewer from '@/components/memo/MemoViewer';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { useJobStatus } from '@/hooks/useJobStatus';
-import { apiClient } from '@/lib/api';
+import { exportMemoPDF } from '@/lib/api';
 import { AnalysisResult } from '@/types/api';
 import { downloadFile } from '@/utils/format';
 
@@ -23,12 +23,9 @@ export default function Home() {
 
   const { uploadFile, uploading, error: uploadError } = useFileUpload({
     onSuccess: async (response) => {
-      // Start analysis after successful upload
-      const analysisResponse = await apiClient.startAnalysis(response.file_id);
-      if (analysisResponse.success) {
-        setJobId(analysisResponse.data.job_id);
-        setCurrentStep('processing');
-      }
+      // Response contains job_id directly from upload
+      setJobId(response.job_id);
+      setCurrentStep('processing');
     },
     onError: (error) => {
       console.error('Upload failed:', error);
@@ -50,7 +47,7 @@ export default function Home() {
   const handleExportPDF = async () => {
     if (!jobId) return;
     
-    const pdfBlob = await apiClient.exportMemoPDF(jobId);
+    const pdfBlob = await exportMemoPDF(jobId);
     if (pdfBlob) {
       const filename = `${analysisResult?.startup_data.company_name || 'startup'}-memo.pdf`;
       downloadFile(pdfBlob, filename);
@@ -182,7 +179,6 @@ export default function Home() {
               {activeTab === 'risks' && (
                 <RiskDisplay 
                   riskAssessment={analysisResult.risk_assessment}
-                  companyName={analysisResult.startup_data.company_name}
                 />
               )}
               

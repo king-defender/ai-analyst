@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api';
+import { getJobStatus } from '@/lib/api';
 import { JobStatus } from '@/components/status/JobTracker';
 
 interface UseJobStatusOptions {
@@ -25,13 +25,9 @@ export function useJobStatus(
       setLoading(true);
       setError(null);
       
-      const response = await apiClient.getJobStatus(jobId);
+      const response = await getJobStatus(jobId);
       
-      if (response.success) {
-        setStatus(response.data);
-      } else {
-        setError(response.error || 'Failed to fetch job status');
-      }
+      setStatus(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {

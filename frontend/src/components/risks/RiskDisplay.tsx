@@ -1,14 +1,13 @@
 'use client';
 
-import { RiskAssessment, RiskFactor, RedFlag, YellowFlag } from '@/types/startup';
-import { AlertTriangle, AlertCircle, Shield, TrendingDown, ExclamationTriangle } from 'lucide-react';
+import { RiskAssessment } from '@/types/startup';
+import { AlertTriangle, AlertCircle, Shield, TrendingDown } from 'lucide-react';
 
 interface RiskDisplayProps {
   riskAssessment: RiskAssessment;
-  companyName: string;
 }
 
-export default function RiskDisplay({ riskAssessment, companyName }: RiskDisplayProps) {
+export default function RiskDisplay({ riskAssessment }: RiskDisplayProps) {
   const getRiskScoreColor = (score: number) => {
     if (score >= 80) return 'text-red-600 bg-red-100';
     if (score >= 60) return 'text-orange-600 bg-orange-100';
@@ -36,11 +35,11 @@ export default function RiskDisplay({ riskAssessment, companyName }: RiskDisplay
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'market': return <TrendingDown className="h-4 w-4" />;
-      case 'financial': return <ExclamationTriangle className="h-4 w-4" />;
+      case 'financial': return <AlertTriangle className="h-4 w-4" />;
       case 'team': return <AlertCircle className="h-4 w-4" />;
       case 'product': return <Shield className="h-4 w-4" />;
       case 'competitive': return <AlertTriangle className="h-4 w-4" />;
-      case 'regulatory': return <ExclamationTriangle className="h-4 w-4" />;
+      case 'regulatory': return <AlertTriangle className="h-4 w-4" />;
       default: return <AlertCircle className="h-4 w-4" />;
     }
   };

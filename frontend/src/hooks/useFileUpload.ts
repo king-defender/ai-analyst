@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { apiClient } from '@/lib/api';
+import { uploadDocument } from '@/lib/api';
 import { UploadResponse } from '@/types/api';
 
 interface UseFileUploadOptions {
@@ -62,19 +62,13 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
         });
       }, 200);
 
-      const response = await apiClient.uploadFile(file);
+      const response = await uploadDocument(file);
       
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (response.success) {
-        setUploadedFile(response.data);
-        onSuccess?.(response.data);
-      } else {
-        const errorMessage = response.error || 'Upload failed';
-        setError(errorMessage);
-        onError?.(errorMessage);
-      }
+      setUploadedFile(response);
+      onSuccess?.(response);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Upload failed';
       setError(errorMessage);
