@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 
 from app.routers import documents, analysis, memos, jobs
-from app.core.config import settings
+from app.core import settings
 from app.schemas.api import HealthResponse
 
 app = FastAPI(
