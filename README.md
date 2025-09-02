@@ -216,6 +216,22 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 📚 Documentation
+
+### User Documentation
+- 📖 **[User Guide](docs/USER_GUIDE.md)**: Complete guide for using the application
+- 🔧 **[Troubleshooting](docs/TROUBLESHOOTING.md)**: Solutions to common issues and debugging
+
+### Developer Documentation
+- 🤝 **[Contributing Guide](docs/CONTRIBUTING.md)**: Guidelines for contributors
+- 🏗️ **[API Reference](docs/api-reference.md)**: Comprehensive API documentation
+- ⚙️ **[GCP Setup](docs/gcp-setup.md)**: Google Cloud Platform configuration
+- 🚀 **[Deployment Guide](docs/deployment.md)**: Production deployment instructions
+
+### Operations Documentation
+- 👥 **[Team Structure](docs/TEAM_STRUCTURE.md)**: Roles, responsibilities, and organization
+- 🔧 **[Operations Manual](docs/OPERATIONS.md)**: System operations and monitoring procedures
+
 ## 🆘 Support
 
 - 📖 **Documentation**: [docs/](docs/)
