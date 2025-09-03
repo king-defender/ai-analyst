@@ -1,0 +1,78 @@
+{
+  "company_info": {
+    "name": "TechStart AI",
+    "industry": "AI/ML SaaS",
+    "stage": "Series A",
+    "founded": 2022,
+    "location": "San Francisco, CA",
+    "employees": 25,
+    "website": "https://techstart.ai"
+  },
+  "financials": {
+    "arr": 2500000,
+    "revenue_current": 2100000,
+    "revenue_projected": 8000000,
+    "burn_rate": 150000,
+    "runway_months": 18,
+    "gross_margin": 0.85,
+    "growth_rate": 0.15
+  },
+  "funding": {
+    "total_raised": 5000000,
+    "current_round": {
+      "type": "Series A",
+      "amount": 3000000,
+      "valuation_pre": 12000000,
+      "valuation_post": 15000000
+    },
+    "previous_rounds": [
+      {
+        "type": "Seed",
+        "amount": 2000000,
+        "date": "2023-01-15"
+      }
+    ]
+  },
+  "team": {
+    "founders": [
+      {
+        "name": "Jane Smith",
+        "role": "CEO",
+        "background": "Former VP Engineering at Google"
+      },
+      {
+        "name": "John Doe",
+        "role": "CTO",
+        "background": "AI Researcher, Stanford PhD"
+      }
+    ],
+    "key_hires": [
+      {
+        "name": "Alice Johnson",
+        "role": "VP Sales",
+        "background": "Former Director at Salesforce"
+      }
+    ]
+  },
+  "product": {
+    "description": "AI-powered customer service automation platform",
+    "key_features": [
+      "Natural language processing",
+      "Automated ticket routing",
+      "Sentiment analysis",
+      "Multi-channel support"
+    ],
+    "customers": 45,
+    "pricing_model": "SaaS subscription"
+  },
+  "market": {
+    "size": 50000000000,
+    "growth_rate": 0.12,
+    "competitors": [
+      "Zendesk",
+      "Intercom",
+      "Freshworks"
+    ],
+    "differentiation": "AI-first approach with 90% automation rate"
+  }
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "company_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique identifier for the company"
+  },
+  {
+    "name": "company_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Company name"
+  },
+  {
+    "name": "industry",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Industry category (SaaS, FinTech, HealthTech, etc.)"
+  },
+  {
+    "name": "stage",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Funding stage (Pre-Seed, Seed, Series A, B, C, etc.)"
+  },
+  {
+    "name": "founded_year",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Year company was founded"
+  },
+  {
+    "name": "total_funding",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Total funding raised to date in USD"
+  },
+  {
+    "name": "last_funding_date",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Date of most recent funding round"
+  },
+  {
+    "name": "last_funding_amount",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Amount of most recent funding round in USD"
+  },
+  {
+    "name": "current_valuation",
+    "type": "FLOAT",
+    "mode": "NULLABLE",
+    "description": "Current valuation in USD"
+  },
+  {
+    "name": "employee_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Number of employees"
+  },
+  {
+    "name": "headquarters_location",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Location of company headquarters"
+  },
+  {
+    "name": "website",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Company website URL"
+  },
+  {
+    "name": "data_updated",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When this record was last updated"
+  }
+]

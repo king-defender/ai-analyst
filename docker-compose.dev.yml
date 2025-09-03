@@ -1,0 +1,64 @@
+# Development environment configuration
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - ./backend:/app
+      - backend_cache:/app/__pycache__
+    depends_on:
+      - firestore-emulator
+    networks:
+      - ai-analyst-network
+
+  frontend:
+    build:
+      context: ./frontend  
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    networks:
+      - ai-analyst-network
+
+  firestore-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+    ports:
+      - "8080:8080"
+      - "4000:4000"
+    command: >
+      sh -c "gcloud emulators firestore start --host-port=0.0.0.0:8080"
+    networks:
+      - ai-analyst-network
+
+  bigquery-emulator:
+    image: ghcr.io/goccy/bigquery-emulator:latest
+    ports:
+      - "9050:9050"
+    environment:
+      - PORT=9050
+    volumes:
+      - ./sample_data/benchmarks:/data
+    networks:
+      - ai-analyst-network
+
+volumes:
+  backend_cache:
+  frontend_node_modules:
+
+networks:
+  ai-analyst-network:
+    driver: bridge

@@ -1,0 +1,41 @@
+# Core ML Libraries
+torch>=2.1.0
+transformers>=4.36.0
+sentence-transformers>=2.2.0
+scikit-learn>=1.3.0
+
+# Google AI Platform
+google-cloud-aiplatform>=1.38.0
+vertexai>=1.38.0
+
+# Document Processing
+pymupdf>=1.23.0
+pypdf>=4.0.0
+python-docx>=1.1.0
+pdfplumber>=0.10.0
+
+# Data Science
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# NLP and Text Processing
+spacy>=3.7.0
+nltk>=3.8.0
+textstat>=0.7.0
+
+# Prompt Engineering
+langchain>=0.1.0
+openai>=1.3.0
+tiktoken>=0.5.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+tqdm>=4.66.0
+requests>=2.31.0
+
+# Testing
+pytest>=7.4.0
+pytest-mock>=3.12.0
