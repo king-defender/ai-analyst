@@ -37,6 +37,7 @@ The AI Analyst MVP is designed to automate the initial screening and analysis of
 - Python 3.9+
 - Google Cloud SDK
 - GCP Project with enabled APIs
+- Docker (optional, for containerized development)
 
 ### Installation
 
@@ -71,6 +72,7 @@ The AI Analyst MVP is designed to automate the initial screening and analysis of
 
 ### Development
 
+#### Option 1: Traditional Development
 ```bash
 # Start backend (from backend/)
 uvicorn main:app --reload --port 8000
@@ -80,6 +82,38 @@ npm run dev
 
 # Run ML pipeline (from ml/)
 python -m pipeline.main
+```
+
+#### Option 2: Docker Development
+```bash
+# Using Docker Compose for full development environment
+docker-compose -f docker-compose.dev.yml up
+
+# Or run backend only with Docker
+cd backend
+docker build -t ai-analyst-backend .
+docker run -p 8000:8000 --env-file .env ai-analyst-backend
+```
+
+### Docker Commands
+
+#### Build Production Image
+```bash
+cd backend
+docker build -t ai-analyst-backend .
+```
+
+#### Run Production Container
+```bash
+# Create .env file first (copy from .env.example and configure)
+docker run -p 8000:8000 --env-file .env ai-analyst-backend
+```
+
+#### Development with Hot Reload
+```bash
+cd backend
+docker build -f Dockerfile.dev -t ai-analyst-backend-dev .
+docker run -p 8000:8000 -v $(pwd):/app --env-file .env ai-analyst-backend-dev
 ```
 
 ## 📁 Project Structure
