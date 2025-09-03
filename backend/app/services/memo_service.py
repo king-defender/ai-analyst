@@ -8,9 +8,47 @@ class MemoService:
     
     def __init__(self):
         # In production, this would use Vertex AI/Gemini for memo generation
-        pass
+        self.memos = {}  # In-memory storage for MVP
     
-    async def generate_memo(
+    async def generate_memo(self, file_id: str) -> Dict[str, Any]:
+        """Generate comprehensive investor memo for a file."""
+        
+        # For MVP, generate sample memo data
+        # In production, this would analyze the actual extracted data
+        
+        memo_id = f"memo_{file_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        memo_data = {
+            "memo_id": memo_id,
+            "company_name": "TechFlow Solutions",
+            "executive_summary": "TechFlow Solutions is a Series A SaaS company revolutionizing workflow automation for mid-market enterprises. With strong growth trajectory and proven market traction, this represents a compelling investment opportunity.",
+            "investment_thesis": "Strong product-market fit evidenced by 25% monthly growth and 95% customer retention. Large TAM of $12B with clear path to capture significant market share through superior technology and customer experience.",
+            "key_metrics": {
+                "revenue_arr": 2500000,
+                "growth_rate": 0.25,
+                "customer_count": 150,
+                "gross_margin": 0.85,
+                "runway_months": 18
+            },
+            "risks_and_mitigations": "Primary risks include competitive pressure and customer concentration. Mitigation strategies include product differentiation and customer acquisition diversification.",
+            "recommendation": "INVEST - Strong buy recommendation with suggested investment of $5M at $40M pre-money valuation.",
+            "created_at": datetime.now().isoformat(),
+            "pdf_url": f"/api/v1/memos/{memo_id}/pdf"
+        }
+        
+        # Store memo for retrieval
+        self.memos[memo_id] = memo_data
+        
+        return memo_data
+    
+    async def get_memo(self, memo_id: str) -> Dict[str, Any]:
+        """Get memo by ID."""
+        memo = self.memos.get(memo_id)
+        if not memo:
+            raise ValueError(f"Memo {memo_id} not found")
+        return memo
+    
+    async def generate_memo_detailed(
         self, 
         startup_data: StartupData, 
         benchmark_data: Dict[str, Any],

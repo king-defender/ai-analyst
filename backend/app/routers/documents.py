@@ -101,9 +101,22 @@ async def get_document_status(document_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get status: {str(e)}")
 
-@router.get("/{document_id}/extracted")
+@router.get("/{document_id}/extracted-data")
 async def get_extracted_data(document_id: str):
     """Get extracted data from document"""
+    try:
+        extracted_data = await file_service.get_extracted_data(document_id)
+        if not extracted_data:
+            raise HTTPException(status_code=404, detail="Extracted data not found")
+        return extracted_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get extracted data: {str(e)}")
+
+@router.get("/{document_id}/extracted")
+async def get_extracted_data_legacy(document_id: str):
+    """Get extracted data from document (legacy endpoint)"""
     try:
         extracted_data = await file_service.get_extracted_data(document_id)
         if not extracted_data:

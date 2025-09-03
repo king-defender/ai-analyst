@@ -1,0 +1,93 @@
+{
+  "company_name": "TechFlow Solutions",
+  "industry": "SaaS",
+  "stage": "Series A",
+  "founded_year": 2021,
+  "description": "Workflow automation platform for mid-market enterprises",
+  "team_members": [
+    {
+      "name": "Sarah Chen",
+      "role": "CEO & Co-founder",
+      "experience": "Former VP Engineering at Salesforce, 12 years experience",
+      "linkedin": "https://linkedin.com/in/sarahchen",
+      "background": "Led engineering teams at scale, deep domain expertise in enterprise software"
+    },
+    {
+      "name": "David Rodriguez",
+      "role": "CTO & Co-founder",
+      "experience": "Ex-Google Senior Engineer, 10 years experience",
+      "linkedin": "https://linkedin.com/in/davidrodriguez",
+      "background": "Former tech lead for Google Cloud automation tools"
+    },
+    {
+      "name": "Maria Johnson",
+      "role": "VP Sales",
+      "experience": "Former Director of Sales at HubSpot, 8 years experience",
+      "linkedin": "https://linkedin.com/in/mariajohnson",
+      "background": "Proven track record of scaling B2B SaaS sales teams"
+    }
+  ],
+  "financial_metrics": {
+    "revenue_arr": 2500000,
+    "monthly_growth_rate": 0.25,
+    "runway_months": 18,
+    "burn_rate": 150000,
+    "gross_margin": 0.85,
+    "customer_count": 150,
+    "churn_rate": 0.05,
+    "cac": 800,
+    "ltv": 15000
+  },
+  "market_data": {
+    "tam": 12000000000,
+    "sam": 3000000000,
+    "som": 300000000,
+    "market_growth_rate": 0.20,
+    "competitive_landscape": "Competitive but fragmented",
+    "market_position": "Strong differentiation in mid-market segment"
+  },
+  "product_info": {
+    "product_type": "SaaS Platform",
+    "development_stage": "Production",
+    "key_features": [
+      "Intelligent workflow automation",
+      "Real-time analytics and reporting",
+      "Enterprise-grade security",
+      "API integrations",
+      "Custom workflow builder"
+    ],
+    "unique_value_proposition": "Only platform combining AI-driven automation with industry-specific workflows"
+  },
+  "funding_history": [
+    {
+      "round": "Seed",
+      "amount": 2000000,
+      "date": "2022-03-15",
+      "lead_investor": "Accel Partners",
+      "valuation": 15000000
+    }
+  ],
+  "ask": {
+    "funding_amount": 5000000,
+    "use_of_funds": {
+      "engineering": 0.40,
+      "sales_marketing": 0.35,
+      "operations": 0.15,
+      "working_capital": 0.10
+    },
+    "target_valuation": 40000000
+  },
+  "extraction_metadata": {
+    "confidence_score": 0.88,
+    "extracted_fields": [
+      "company_name",
+      "financial_metrics", 
+      "team_members",
+      "market_data",
+      "product_info",
+      "funding_history"
+    ],
+    "extraction_date": "2025-09-03T13:20:00Z",
+    "source_document": "TechFlow_Series_A_Pitch_Deck.pdf"
+  }
+}

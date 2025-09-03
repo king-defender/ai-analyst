@@ -9,7 +9,61 @@ class BenchmarkService:
         # In production, this would connect to BigQuery
         pass
     
-    async def get_benchmarks(self, startup_data: StartupData) -> Dict[str, Any]:
+    async def get_benchmarks(self, file_id: str) -> Dict[str, Any]:
+        """Get benchmark data for a file."""
+        
+        # For MVP, return sample benchmark data
+        # In production, this would analyze the actual extracted data and query BigQuery
+        
+        sample_benchmark_data = {
+            "peer_companies": [
+                {
+                    "name": "WorkflowMax",
+                    "revenue": 3200000,
+                    "growth_rate": 0.18,
+                    "valuation": 45000000,
+                    "stage": "Series A"
+                },
+                {
+                    "name": "ProcessPro", 
+                    "revenue": 4100000,
+                    "growth_rate": 0.22,
+                    "valuation": 58000000,
+                    "stage": "Series A"
+                },
+                {
+                    "name": "AutoFlow",
+                    "revenue": 2800000,
+                    "growth_rate": 0.15,
+                    "valuation": 38000000,
+                    "stage": "Series A"
+                },
+                {
+                    "name": "StreamlineOps",
+                    "revenue": 3800000,
+                    "growth_rate": 0.20,
+                    "valuation": 52000000,
+                    "stage": "Series A"
+                },
+                {
+                    "name": "FlowBuilder",
+                    "revenue": 2200000,
+                    "growth_rate": 0.12,
+                    "valuation": 28000000,
+                    "stage": "Series A"
+                }
+            ],
+            "industry_metrics": {
+                "median_revenue": 3200000,
+                "median_growth": 0.18,
+                "median_valuation": 45000000,
+                "percentile_rank": 72
+            }
+        }
+        
+        return sample_benchmark_data
+    
+    async def get_benchmarks_detailed(self, startup_data: StartupData) -> Dict[str, Any]:
         """Get benchmark data for a startup."""
         
         # Simulate BigQuery processing delay
