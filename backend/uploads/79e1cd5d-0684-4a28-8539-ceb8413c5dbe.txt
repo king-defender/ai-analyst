@@ -1,0 +1,24 @@
+Sample Pitch Deck Content
+
+TechFlow Solutions - Series A Investment Opportunity
+
+Company Overview:
+TechFlow Solutions is a leading SaaS platform providing workflow automation for mid-market enterprises.
+
+Team:
+- Sarah Chen, CEO: Former VP Engineering at Salesforce
+- David Rodriguez, CTO: Ex-Google Senior Engineer  
+- Maria Johnson, VP Sales: Former HubSpot Director
+
+Financials:
+- ARR: .5M
+- Monthly Growth: 25%
+- Runway: 18 months
+- Customers: 150+
+
+Market:
+- TAM: 2B
+- Growing at 20% annually
+- Clear competitive advantages
+
+Ask: M Series A to accelerate growth

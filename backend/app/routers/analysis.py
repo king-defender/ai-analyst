@@ -5,12 +5,14 @@ from app.schemas.api import StartAnalysisRequest, StartAnalysisResponse
 from app.services.job_service import JobService
 from app.services.analysis_service import AnalysisService
 from app.services.benchmark_service import BenchmarkService
+from app.services.risk_service import RiskService
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
 job_service = JobService()
 analysis_service = AnalysisService()
 benchmark_service = BenchmarkService()
+risk_service = RiskService()
 
 @router.post("/start", response_model=StartAnalysisResponse)
 async def start_analysis(
@@ -44,15 +46,27 @@ async def start_analysis(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start analysis: {str(e)}")
 
-@router.post("/risks")
-async def assess_risks():
-    """Run risk assessment on document"""
-    return {"message": "Risk assessment endpoint - implementation pending"}
+@router.get("/{file_id}/benchmarks")
+async def get_benchmark_data(file_id: str):
+    """Get benchmarking data for a file."""
+    try:
+        # For MVP, return sample benchmark data
+        # In production, this would query actual benchmark database
+        benchmark_data = await benchmark_service.get_benchmarks(file_id)
+        return benchmark_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get benchmarks: {str(e)}")
 
-@router.get("/benchmarks")
-async def get_benchmarks():
-    """Get industry benchmarks"""
-    return {"message": "Benchmarks endpoint - implementation pending"}
+@router.get("/{file_id}/risks")
+async def get_risk_assessment(file_id: str):
+    """Get risk assessment for a file."""
+    try:
+        # For MVP, return sample risk assessment
+        # In production, this would run actual risk analysis
+        risk_assessment = await risk_service.assess_risks(file_id)
+        return risk_assessment
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get risk assessment: {str(e)}")
 
 @router.get("/{job_id}/result")
 async def get_analysis_result(job_id: str):

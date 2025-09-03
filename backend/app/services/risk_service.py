@@ -12,7 +12,66 @@ class RiskService:
         # In production, this would use Vertex AI for risk analysis
         pass
     
-    async def assess_risks(
+    async def assess_risks(self, file_id: str) -> Dict[str, Any]:
+        """Perform comprehensive risk assessment for a file."""
+        
+        # For MVP, return sample risk assessment data
+        # In production, this would analyze the actual extracted data
+        
+        sample_risk_assessment = {
+            "risk_flags": [
+                {
+                    "category": "financial",
+                    "severity": "high",
+                    "description": "Limited cash runway of only 8 months",
+                    "evidence": [
+                        "Current burn rate: $50k/month",
+                        "Cash on hand: $400k",
+                        "No immediate funding pipeline"
+                    ],
+                    "confidence": 0.85
+                },
+                {
+                    "category": "market",
+                    "severity": "medium", 
+                    "description": "Competitive landscape is crowded",
+                    "evidence": [
+                        "15+ direct competitors identified",
+                        "Market growth slowing (12% vs 25% last year)",
+                        "Price pressure evident"
+                    ],
+                    "confidence": 0.75
+                },
+                {
+                    "category": "team",
+                    "severity": "low",
+                    "description": "Strong technical team but limited business experience",
+                    "evidence": [
+                        "CTO has 10+ years experience",
+                        "CEO first-time founder",
+                        "No sales/marketing leadership"
+                    ],
+                    "confidence": 0.70
+                },
+                {
+                    "category": "product",
+                    "severity": "medium",
+                    "description": "Product-market fit not yet proven at scale",
+                    "evidence": [
+                        "Customer churn rate: 12%",
+                        "Limited enterprise customers",
+                        "Feature requests scattered"
+                    ],
+                    "confidence": 0.80
+                }
+            ],
+            "overall_risk_score": 67,
+            "recommendation": "investigate"
+        }
+        
+        return sample_risk_assessment
+    
+    async def assess_risks_detailed(
         self, 
         startup_data: StartupData, 
         benchmark_data: Dict[str, Any]

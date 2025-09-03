@@ -1,0 +1,125 @@
+{
+  "risk_flags": [
+    {
+      "category": "financial",
+      "severity": "high",
+      "description": "Limited cash runway requires immediate funding attention",
+      "evidence": [
+        "Current runway: 18 months at $150k monthly burn",
+        "No committed follow-on funding",
+        "Growth rate requires increased investment"
+      ],
+      "confidence": 0.85,
+      "mitigation_strategies": [
+        "Secure bridge funding if Series A delayed",
+        "Reduce burn rate by 20% if needed", 
+        "Establish revenue-based financing backup"
+      ]
+    },
+    {
+      "category": "market",
+      "severity": "medium",
+      "description": "Competitive landscape intensifying with new entrants",
+      "evidence": [
+        "3 new well-funded competitors launched in past 12 months",
+        "Price pressure evident in recent deals",
+        "Feature parity increasing across market"
+      ],
+      "confidence": 0.75,
+      "mitigation_strategies": [
+        "Accelerate product differentiation roadmap",
+        "Strengthen customer success to reduce churn",
+        "Focus on enterprise features competitors lack"
+      ]
+    },
+    {
+      "category": "team",
+      "severity": "low",
+      "description": "Key person risk with CEO and CTO as only co-founders",
+      "evidence": [
+        "Heavy reliance on founding team",
+        "No clear succession planning",
+        "Limited bench strength in key roles"
+      ],
+      "confidence": 0.70,
+      "mitigation_strategies": [
+        "Add experienced C-level executives",
+        "Implement key person insurance",
+        "Develop strong advisory board"
+      ]
+    },
+    {
+      "category": "product",
+      "severity": "medium",
+      "description": "Product-market fit strong but not yet proven at enterprise scale",
+      "evidence": [
+        "Customer concentration in mid-market segment",
+        "Limited enterprise customer penetration",
+        "Feature gaps for large enterprise needs"
+      ],
+      "confidence": 0.80,
+      "mitigation_strategies": [
+        "Develop enterprise feature roadmap",
+        "Hire enterprise sales specialists",
+        "Establish enterprise reference customers"
+      ]
+    },
+    {
+      "category": "technology",
+      "severity": "low", 
+      "description": "Infrastructure scalability needs validation at 10x growth",
+      "evidence": [
+        "Current architecture supports 150 customers",
+        "No stress testing at enterprise scale",
+        "Limited DevOps automation"
+      ],
+      "confidence": 0.65,
+      "mitigation_strategies": [
+        "Conduct infrastructure scalability audit",
+        "Implement auto-scaling architecture",
+        "Hire senior DevOps engineer"
+      ]
+    }
+  ],
+  "overall_risk_score": 67,
+  "risk_level": "MODERATE",
+  "recommendation": "INVESTIGATE_FURTHER",
+  "risk_summary": {
+    "high_severity_count": 1,
+    "medium_severity_count": 2,
+    "low_severity_count": 2,
+    "critical_issues": [
+      "Cash runway management critical for next 12 months"
+    ],
+    "watch_items": [
+      "Competitive positioning and differentiation",
+      "Enterprise market penetration progress",
+      "Key talent retention and hiring"
+    ]
+  },
+  "risk_mitigation_timeline": {
+    "immediate_actions": [
+      "Initiate Series A fundraising process",
+      "Establish financial controls and monitoring"
+    ],
+    "short_term_actions": [
+      "Hire key executives",
+      "Strengthen competitive positioning"
+    ],
+    "long_term_actions": [
+      "Scale enterprise capabilities",
+      "Build sustainable competitive advantages"
+    ]
+  },
+  "analysis_metadata": {
+    "analysis_date": "2025-09-03T13:25:00Z",
+    "analyst": "AI Risk Assessment Engine",
+    "confidence_level": 0.78,
+    "data_sources": [
+      "Company financials",
+      "Market research",
+      "Competitive analysis",
+      "Team assessment"
+    ]
+  }
+}
