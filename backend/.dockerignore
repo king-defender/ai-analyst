@@ -93,7 +93,6 @@ temp/
 *.temp
 
 # Google Cloud credentials
-*.json
 service-account*.json
 credentials.json
 
