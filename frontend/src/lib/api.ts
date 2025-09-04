@@ -11,12 +11,27 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
 
   const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
     method: 'POST',
+    headers: {
+      // Don't set Content-Type manually - let browser set it with boundary for multipart/form-data
+    },
     body: formData,
+    // Add credentials and CORS options for better compatibility
+    credentials: 'include',
+    mode: 'cors',
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-    throw new Error(errorData.detail || errorData.error || 'Upload failed');
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      // If response is not JSON (empty response), provide a fallback
+      errorData = { 
+        error: response.status === 429 ? 'Rate limit exceeded. Please try again in a moment.' : 'Upload failed',
+        status: response.status
+      };
+    }
+    throw new Error(errorData.detail || errorData.error || `Upload failed (${response.status})`);
   }
 
   return response.json();

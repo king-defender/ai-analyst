@@ -5,11 +5,11 @@ class Settings(BaseSettings):
     # API Configuration
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "AI Analyst API"
-    DEBUG: bool = False
+    DEBUG: bool = True  # Default to True for development
     ENVIRONMENT: str = "development"
     
     # CORS
-    ALLOWED_HOSTS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    ALLOWED_HOSTS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"]
     
     # Google Cloud
     GOOGLE_CLOUD_PROJECT: str = ""
