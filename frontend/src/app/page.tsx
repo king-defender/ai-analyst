@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
 import FileUpload from '@/components/upload/FileUpload';
 import JobTracker from '@/components/status/JobTracker';
 import StartupDataDisplay from '@/components/data/StartupDataDisplay';
@@ -23,7 +22,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('data');
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
-  const { uploadFile, uploading, progress, error: uploadError } = useFileUpload({
+  const { uploadFile, uploading, progress, error: uploadError, retry } = useFileUpload({
     onSuccess: async (response) => {
       setUploadStatus('success');
       // Response contains job_id directly from upload
@@ -47,6 +46,13 @@ export default function Home() {
   const handleFileUpload = (file: File) => {
     setUploadStatus('uploading');
     uploadFile(file);
+  };
+
+  // Handle retry
+  const handleRetry = () => {
+    if (retry()) {
+      setUploadStatus('idle');
+    }
   };
 
   // Handle analysis completion
@@ -88,20 +94,9 @@ export default function Home() {
                 uploadProgress={progress}
                 uploadStatus={uploadStatus}
                 error={uploadError}
+                onRetry={handleRetry}
               />
             </div>
-            
-            {uploadError && uploadStatus === 'error' && (
-              <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                  <div>
-                    <p className="text-red-800 font-medium">Upload Failed</p>
-                    <p className="text-red-700 text-sm">{uploadError}</p>
-                  </div>
-                </div>
-              </div>
-            )}
             
             <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg border p-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">How it works</h2>
