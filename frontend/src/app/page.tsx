@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 import FileUpload from '@/components/upload/FileUpload';
 import JobTracker from '@/components/status/JobTracker';
 import StartupDataDisplay from '@/components/data/StartupDataDisplay';
@@ -20,21 +21,33 @@ export default function Home() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [activeTab, setActiveTab] = useState('data');
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
-  const { uploadFile, uploading, error: uploadError } = useFileUpload({
+  const { uploadFile, uploading, progress, error: uploadError } = useFileUpload({
     onSuccess: async (response) => {
+      setUploadStatus('success');
       // Response contains job_id directly from upload
       setJobId(response.job_id);
-      setCurrentStep('processing');
+      setTimeout(() => {
+        setCurrentStep('processing');
+      }, 1000); // Brief delay to show success state
     },
     onError: (error) => {
       console.error('Upload failed:', error);
+      setUploadStatus('error');
+      setTimeout(() => setUploadStatus('idle'), 3000); // Reset after 3 seconds
     }
   });
 
   const { status } = useJobStatus(jobId, {
     autoStart: true,
   });
+
+  // Handle file upload
+  const handleFileUpload = (file: File) => {
+    setUploadStatus('uploading');
+    uploadFile(file);
+  };
 
   // Handle analysis completion
   useEffect(() => {
@@ -59,44 +72,67 @@ export default function Home() {
       case 'upload':
         return (
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-12">
+              <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 AI Analyst MVP
               </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                Upload your pitch deck and get comprehensive analysis, benchmarking, and investor-ready deal memos.
+              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Upload your pitch deck and get comprehensive analysis, benchmarking, and investor-ready deal memos powered by advanced AI.
               </p>
             </div>
             
-            <FileUpload 
-              onFileUpload={uploadFile}
-              isUploading={uploading}
-            />
+            <div className="mb-12">
+              <FileUpload 
+                onFileUpload={handleFileUpload}
+                isUploading={uploading}
+                uploadProgress={progress}
+                uploadStatus={uploadStatus}
+                error={uploadError}
+              />
+            </div>
             
-            {uploadError && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-800">{uploadError}</p>
+            {uploadError && uploadStatus === 'error' && (
+              <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <div>
+                    <p className="text-red-800 font-medium">Upload Failed</p>
+                    <p className="text-red-700 text-sm">{uploadError}</p>
+                  </div>
+                </div>
               </div>
             )}
             
-            <div className="mt-12 max-w-md mx-auto bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">How it works</h2>
-              <ol className="space-y-3 text-gray-700">
-                <li className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">1</div>
-                  <span>Upload your pitch deck (PDF, TXT, or DOCX)</span>
+            <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg border p-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">How it works</h2>
+              <ol className="space-y-4 text-gray-700">
+                <li className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">1</div>
+                  <div>
+                    <p className="font-medium">Upload your pitch deck</p>
+                    <p className="text-sm text-gray-500">(PDF, TXT, or DOCX)</p>
+                  </div>
                 </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">2</div>
-                  <span>AI extracts key data and benchmarks against peers</span>
+                <li className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">2</div>
+                  <div>
+                    <p className="font-medium">AI extracts key data</p>
+                    <p className="text-sm text-gray-500">Benchmarks against industry peers</p>
+                  </div>
                 </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">3</div>
-                  <span>Risk assessment identifies potential concerns</span>
+                <li className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">3</div>
+                  <div>
+                    <p className="font-medium">Risk assessment</p>
+                    <p className="text-sm text-gray-500">Identifies potential concerns</p>
+                  </div>
                 </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">4</div>
-                  <span>Generate and export investor-ready memo</span>
+                <li className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">4</div>
+                  <div>
+                    <p className="font-medium">Generate investor memo</p>
+                    <p className="text-sm text-gray-500">Export ready-to-share analysis</p>
+                  </div>
                 </li>
               </ol>
             </div>
@@ -106,16 +142,18 @@ export default function Home() {
       case 'processing':
         return (
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="text-center mb-12">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
                 Analyzing Your Pitch Deck
               </h1>
-              <p className="text-gray-600">
-                Our AI is processing your document and generating insights...
+              <p className="text-lg text-gray-600 mb-8">
+                Our AI is processing your document and generating comprehensive insights...
               </p>
             </div>
             
-            {jobId && <JobTracker jobId={jobId} />}
+            <div className="bg-white rounded-xl shadow-lg border p-8">
+              {jobId && <JobTracker jobId={jobId} />}
+            </div>
           </div>
         );
         
@@ -198,7 +236,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {renderContent()}
       </div>

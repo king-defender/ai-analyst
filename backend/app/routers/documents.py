@@ -23,9 +23,16 @@ async def upload_document(
 ):
     """
     Upload a pitch deck document for analysis.
-    Supports PDF, TXT, and DOCX files.
+    Supports PDF, TXT, and DOCX files with comprehensive error handling.
     """
     try:
+        # Validate file exists and has a name
+        if not file or not file.filename:
+            raise HTTPException(
+                status_code=400,
+                detail="No file provided or file has no name"
+            )
+        
         # Validate file type
         allowed_types = ["application/pdf", "text/plain", 
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -33,16 +40,23 @@ async def upload_document(
         if file.content_type not in allowed_types:
             raise HTTPException(
                 status_code=400, 
-                detail=f"File type {file.content_type} not supported. Use PDF, TXT, or DOCX."
+                detail=f"File type '{file.content_type}' is not supported. Please upload a PDF, TXT, or DOCX file."
             )
         
         # Validate file size (50MB max)
         max_size = 50 * 1024 * 1024  # 50MB
         file_content = await file.read()
-        if len(file_content) > max_size:
+        if len(file_content) == 0:
             raise HTTPException(
                 status_code=400,
-                detail="File size exceeds 50MB limit"
+                detail="File is empty. Please upload a file with content."
+            )
+        
+        if len(file_content) > max_size:
+            size_mb = len(file_content) / (1024 * 1024)
+            raise HTTPException(
+                status_code=400,
+                detail=f"File size ({size_mb:.1f}MB) exceeds the 50MB limit. Please compress your file or split it into smaller parts."
             )
         
         # Reset file pointer
@@ -53,7 +67,13 @@ async def upload_document(
         job_id = str(uuid.uuid4())
         
         # Save file
-        file_path = await file_service.save_file(file, file_id)
+        try:
+            file_path = await file_service.save_file(file, file_id)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to save file: {str(e)}"
+            )
         
         # Create job
         job = Job(
@@ -65,15 +85,25 @@ async def upload_document(
             message="File uploaded successfully"
         )
         
-        await job_service.create_job(job)
+        try:
+            await job_service.create_job(job)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to create processing job: {str(e)}"
+            )
         
         # Start analysis in background
-        background_tasks.add_task(
-            analysis_service.start_analysis_pipeline,
-            job_id=job_id,
-            file_id=file_id,
-            file_path=file_path
-        )
+        try:
+            background_tasks.add_task(
+                analysis_service.start_analysis_pipeline,
+                job_id=job_id,
+                file_id=file_id,
+                file_path=file_path
+            )
+        except Exception as e:
+            # Log error but don't fail the upload since file is already saved
+            print(f"Warning: Failed to start analysis pipeline: {str(e)}")
         
         return UploadResponse(
             job_id=job_id,
@@ -85,7 +115,12 @@ async def upload_document(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+        # Catch-all for unexpected errors
+        print(f"Unexpected upload error: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail="An unexpected error occurred during file upload. Please try again or contact support if the problem persists."
+        )
 
 @router.get("/{document_id}/status")
 async def get_document_status(document_id: str):
