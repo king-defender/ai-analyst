@@ -2,6 +2,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from typing import List
 import uuid
 import os
+import logging
+import traceback
 from datetime import datetime
 
 from app.models.startup import Job, JobStatus, JobStage
@@ -11,6 +13,9 @@ from app.services.job_service import JobService
 from app.services.analysis_service import AnalysisService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+# Set up logger for this module
+logger = logging.getLogger(__name__)
 
 file_service = FileService()
 job_service = JobService()
@@ -85,7 +90,7 @@ async def upload_document(
         try:
             file_path = await file_service.save_file(file, file_id)
         except Exception as e:
-            print(f"File save error: {str(e)}")
+            logger.error(f"File save error: {str(e)}")
             raise HTTPException(
                 status_code=500,
                 detail=f"Failed to save file: {str(e)}. Please try again or contact support if the problem persists."
@@ -104,7 +109,7 @@ async def upload_document(
         try:
             await job_service.create_job(job)
         except Exception as e:
-            print(f"Job creation error: {str(e)}")
+            logger.error(f"Job creation error: {str(e)}")
             # Try to clean up the uploaded file
             try:
                 await file_service.delete_file(file_id)
@@ -125,7 +130,7 @@ async def upload_document(
             )
         except Exception as e:
             # Log error but don't fail the upload since file is already saved
-            print(f"Warning: Failed to start analysis pipeline: {str(e)}")
+            logger.warning(f"Failed to start analysis pipeline: {str(e)}")
         
         # Ensure response is properly formatted
         response = UploadResponse(
@@ -135,7 +140,7 @@ async def upload_document(
             status="uploaded"
         )
         
-        print(f"Upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}")
+        logger.info(f"Upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}")
         return response
         
     except HTTPException:
@@ -143,8 +148,7 @@ async def upload_document(
         raise
     except Exception as e:
         # Catch-all for unexpected errors with detailed logging
-        print(f"Unexpected upload error: {str(e)}")
-        import traceback
+        logger.error(f"Unexpected upload error: {str(e)}")
         traceback.print_exc()
         raise HTTPException(
             status_code=500, 

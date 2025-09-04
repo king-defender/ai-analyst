@@ -154,11 +154,17 @@ class TestUploadEndpoint:
     
     def test_upload_file_too_large(self):
         """Test upload with file exceeding size limit."""
-        # Create a large test file (larger than 50MB)
-        large_content = b"x" * (51 * 1024 * 1024)  # 51MB
+        # Create a large test file (larger than 50MB) using chunked writes to avoid high memory usage
+        total_size = 51 * 1024 * 1024  # 51MB
+        chunk_size = 1024 * 1024       # 1MB
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            tmp_file.write(large_content)
+            written = 0
+            chunk = b"x" * chunk_size
+            while written < total_size:
+                write_size = min(chunk_size, total_size - written)
+                tmp_file.write(chunk[:write_size])
+                written += write_size
             tmp_file_path = tmp_file.name
         
         try:
