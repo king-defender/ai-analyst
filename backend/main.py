@@ -2,15 +2,32 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
+from contextlib import asynccontextmanager
 
 from app.routers import documents, analysis, memos, jobs
 from app.core import settings
 from app.schemas.api import HealthResponse
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application startup and shutdown events."""
+    # Startup
+    print("AI Analyst API starting up...")
+    print(f"Debug mode: {settings.DEBUG}")
+    print(f"Environment: {settings.ENVIRONMENT}")
+    
+    yield
+    
+    # Shutdown
+    print("AI Analyst API shutting down...")
+
+
 app = FastAPI(
     title="AI Analyst API",
     description="AI-powered startup analysis and investor memo generation",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -62,18 +79,6 @@ async def global_exception_handler(request, exc):
             "message": str(exc) if settings.DEBUG else "An unexpected error occurred"
         }
     )
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup."""
-    print("AI Analyst API starting up...")
-    print(f"Debug mode: {settings.DEBUG}")
-    print(f"Environment: {settings.ENVIRONMENT}")
-
-@app.on_event("shutdown") 
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    print("AI Analyst API shutting down...")
 
 if __name__ == "__main__":
     import uvicorn
