@@ -30,13 +30,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
+# CORS middleware - configured for development and production
+allowed_origins = ["*"] if settings.DEBUG else settings.ALLOWED_HOSTS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual frontend URLs
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include routers
@@ -44,6 +47,11 @@ app.include_router(documents.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api")
 app.include_router(memos.router, prefix="/api")
 app.include_router(jobs.router, prefix="/api")
+
+@app.options("/{full_path:path}")
+async def options_handler():
+    """Handle CORS preflight requests for all paths."""
+    return {"message": "OK"}
 
 @app.get("/")
 async def root():

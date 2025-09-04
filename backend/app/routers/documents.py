@@ -30,22 +30,37 @@ async def upload_document(
         if not file or not file.filename:
             raise HTTPException(
                 status_code=400,
-                detail="No file provided or file has no name"
+                detail="No file provided or file has no name. Please select a file to upload."
             )
         
-        # Validate file type
-        allowed_types = ["application/pdf", "text/plain", 
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+        # Validate file type by content type and extension
+        allowed_content_types = {
+            "application/pdf": ".pdf",
+            "text/plain": ".txt", 
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx"
+        }
         
-        if file.content_type not in allowed_types:
+        file_extension = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        
+        # Check content type
+        if file.content_type not in allowed_content_types:
             raise HTTPException(
                 status_code=400, 
                 detail=f"File type '{file.content_type}' is not supported. Please upload a PDF, TXT, or DOCX file."
             )
         
+        # Double-check extension matches content type
+        expected_extension = allowed_content_types[file.content_type].lstrip('.')
+        if file_extension != expected_extension:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File extension '.{file_extension}' does not match content type '{file.content_type}'. Please ensure your file is properly formatted."
+            )
+        
         # Validate file size (50MB max)
         max_size = 50 * 1024 * 1024  # 50MB
         file_content = await file.read()
+        
         if len(file_content) == 0:
             raise HTTPException(
                 status_code=400,
@@ -55,27 +70,28 @@ async def upload_document(
         if len(file_content) > max_size:
             size_mb = len(file_content) / (1024 * 1024)
             raise HTTPException(
-                status_code=400,
+                status_code=413,  # Payload Too Large
                 detail=f"File size ({size_mb:.1f}MB) exceeds the 50MB limit. Please compress your file or split it into smaller parts."
             )
         
-        # Reset file pointer
+        # Reset file pointer for processing
         await file.seek(0)
         
         # Generate IDs
         file_id = str(uuid.uuid4())
         job_id = str(uuid.uuid4())
         
-        # Save file
+        # Save file with enhanced error handling
         try:
             file_path = await file_service.save_file(file, file_id)
         except Exception as e:
+            print(f"File save error: {str(e)}")
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to save file: {str(e)}"
+                detail=f"Failed to save file: {str(e)}. Please try again or contact support if the problem persists."
             )
         
-        # Create job
+        # Create job with enhanced error handling
         job = Job(
             id=job_id,
             status=JobStatus.PENDING,
@@ -88,12 +104,18 @@ async def upload_document(
         try:
             await job_service.create_job(job)
         except Exception as e:
+            print(f"Job creation error: {str(e)}")
+            # Try to clean up the uploaded file
+            try:
+                await file_service.delete_file(file_id)
+            except:
+                pass
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to create processing job: {str(e)}"
+                detail=f"Failed to create processing job: {str(e)}. Please try again."
             )
         
-        # Start analysis in background
+        # Start analysis in background with enhanced error handling
         try:
             background_tasks.add_task(
                 analysis_service.start_analysis_pipeline,
@@ -105,18 +127,25 @@ async def upload_document(
             # Log error but don't fail the upload since file is already saved
             print(f"Warning: Failed to start analysis pipeline: {str(e)}")
         
-        return UploadResponse(
+        # Ensure response is properly formatted
+        response = UploadResponse(
             job_id=job_id,
             file_id=file_id,
             filename=file.filename or "unknown",
             status="uploaded"
         )
         
+        print(f"Upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}")
+        return response
+        
     except HTTPException:
+        # Re-raise HTTP exceptions as-is
         raise
     except Exception as e:
-        # Catch-all for unexpected errors
+        # Catch-all for unexpected errors with detailed logging
         print(f"Unexpected upload error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500, 
             detail="An unexpected error occurred during file upload. Please try again or contact support if the problem persists."

@@ -101,3 +101,7 @@ models/downloaded/
 # Temporary files
 /tmp/
 *.tmp
+
+# Upload files (backend)
+backend/uploads/*
+!backend/uploads/.gitkeep
