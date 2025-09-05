@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { uploadDocument } from '@/lib/api';
+import { uploadDocument, isApiError } from '@/lib/api';
 import { UploadResponse, ApiError } from '@/types/api';
 
 interface UseFileUploadOptions {
@@ -72,9 +72,9 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     } catch (err) {
       let errorToSet: ApiError | string;
       
-      if (err && typeof err === 'object' && 'type' in err) {
+      if (isApiError(err)) {
         // It's an ApiError
-        errorToSet = err as ApiError;
+        errorToSet = err;
       } else if (err instanceof Error) {
         errorToSet = err.message;
       } else {

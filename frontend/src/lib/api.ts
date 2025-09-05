@@ -3,6 +3,26 @@ import { UploadResponse, JobStatusResponse, ApiError } from '@/types/api';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
+ * Type guard to check if an error is an ApiError
+ */
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'name' in error &&
+    'message' in error &&
+    'type' in error &&
+    'status' in error &&
+    'retryable' in error &&
+    typeof (error as any).name === 'string' &&
+    typeof (error as any).message === 'string' &&
+    typeof (error as any).type === 'string' &&
+    typeof (error as any).status === 'number' &&
+    typeof (error as any).retryable === 'boolean'
+  );
+}
+
+/**
  * Enhanced error handling with specific error types
  */
 function createApiError(response: Response, errorData?: any): ApiError {
@@ -110,7 +130,7 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
     return response.json();
   } catch (error) {
     // Handle network errors (fetch failures, timeouts, etc.)
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    if (error instanceof TypeError) {
       throw createApiError(new Response(null, { status: 0 }));
     }
     // Re-throw API errors as-is
