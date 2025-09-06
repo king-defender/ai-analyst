@@ -46,7 +46,9 @@ The main dashboard provides:
 The system accepts the following document formats:
 - **PDF**: Pitch deck presentations (preferred)
 - **PowerPoint**: .pptx files
-- **Word Documents**: .docx files
+- **Word Documents**: .docx and .doc files
+- **Excel Spreadsheets**: .xlsx and .xls files
+- **JSON**: Structured data files
 - **Text Files**: .txt files for transcripts
 
 ### File Requirements

@@ -17,11 +17,13 @@ langchain>=0.1.0
 tiktoken>=0.5.0
 pypdf>=4.0.0
 python-docx>=1.1.0
+docx2txt>=0.8
 
 # Data Processing
 pandas>=2.0.0
 numpy>=1.24.0
 pillow>=10.0.0
+openpyxl>=3.1.0
 
 # Authentication & Security
 firebase-admin>=6.2.0
