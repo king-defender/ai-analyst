@@ -1,6 +1,49 @@
 from typing import Dict, Optional, List
 from datetime import datetime
 from app.models.startup import Job, JobStatus, JobStage
+from fastapi import APIRouter, UploadFile, File, HTTPException
+import json
+import json
+from google.cloud import firestore
+
+db = firestore.Client()
+JOBS_COLLECTION = "analysis_jobs"
+
+def save_job(job_id, job_data):
+    db.collection(JOBS_COLLECTION).document(job_id).set(job_data)
+
+def get_job(job_id):
+    doc = db.collection(JOBS_COLLECTION).document(job_id).get()
+    if doc.exists:
+        return doc.to_dict()
+    return None
+
+def delete_job(job_id):
+    db.collection(JOBS_COLLECTION).document(job_id).delete()
+
+router = APIRouter()
+
+@router.post("/api/documents/upload")
+async def upload_document(file: UploadFile = File(...)):
+    content_type = file.content_type
+    content = await file.read()
+    
+    if content_type == "application/json":
+        try:
+            data = json.loads(content)
+            # Validate schema, run analysis pipeline directly
+            job_id = str(uuid.uuid4())
+            job_data = {"status": "processing", "input": data}
+            save_job(job_id, job_data)
+            # ... call analysis logic here ...
+            return {"job_id": job_id, "status": "processing"}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(e)}")
+    elif content_type in ["application/pdf", "text/plain"]:
+        # Existing PDF/TXT pipeline logic here
+        ...
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
 
 class JobService:
     def __init__(self):

@@ -20,6 +20,7 @@ analysis_service = AnalysisService()
 
 
 @router.post("/upload", response_model=UploadResponse)
+@router.post("/upload", response_model=UploadResponse)
 async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
     Upload a pitch deck document for analysis.
@@ -33,7 +34,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 detail="No file provided or file has no name. Please select a file to upload.",
             )
 
-        # Validate file type by content type and extension
         allowed_content_types = {
             "application/pdf": ".pdf",
             "text/plain": ".txt",
@@ -46,7 +46,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
 
         file_extension = file.filename.lower().split(".")[-1] if "." in file.filename else ""
 
-        # Check content type
         if file.content_type not in allowed_content_types:
             raise HTTPException(
                 status_code=400,
@@ -56,7 +55,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 ),
             )
 
-        # Double-check extension matches content type
         expected_extension = allowed_content_types[file.content_type].lstrip(".")
         if file_extension != expected_extension:
             raise HTTPException(
@@ -67,7 +65,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 ),
             )
 
-        # Validate file size (50MB max)
         max_size = 50 * 1024 * 1024  # 50MB
         file_content = await file.read()
 
@@ -79,21 +76,70 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
         if len(file_content) > max_size:
             size_mb = len(file_content) / (1024 * 1024)
             raise HTTPException(
-                status_code=413,  # Payload Too Large
+                status_code=413,
                 detail=(
                     f"File size ({size_mb:.1f}MB) exceeds the 50MB limit. "
                     "Please compress your file or split it into smaller parts."
                 ),
             )
 
-        # Reset file pointer for processing
-        await file.seek(0)
-
         # Generate IDs
         file_id = str(uuid.uuid4())
         job_id = str(uuid.uuid4())
 
-        # Save file with enhanced error handling
+        # --- MAIN FIX: Handle JSON files separately ---
+        if file.content_type == "application/json":
+            try:
+                data = None
+                try:
+                    data = json.loads(file_content)
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Failed to parse JSON: {str(e)}"
+                    )
+
+                job = Job(
+                    id=job_id,
+                    status=JobStatus.PENDING,
+                    stage=JobStage.UPLOAD,
+                    file_id=file_id,
+                    progress=10,
+                    message="JSON uploaded successfully",
+                )
+
+                await job_service.create_job(job)
+                # Instead of file path, pass the parsed JSON directly
+                background_tasks.add_task(
+                    analysis_service.start_analysis_pipeline,
+                    job_id=job_id,
+                    file_id=file_id,
+                    file_path=None,
+                    json_data=data
+                )
+
+                response = UploadResponse(
+                    job_id=job_id, file_id=file_id, filename=file.filename or "unknown", status="uploaded"
+                )
+                logger.info(
+                    f"JSON upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}"
+                )
+                return response
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"JSON upload error: {str(e)}")
+                traceback.print_exc()
+                raise HTTPException(
+                    status_code=500,
+                    detail=(
+                        "An error occurred processing the JSON file. Please try again or "
+                        "contact support if the problem persists."
+                    ),
+                )
+
+        # --- Otherwise, handle as regular file upload ---
+        await file.seek(0)
         try:
             file_path = await file_service.save_file(file, file_id)
         except Exception as e:
@@ -106,7 +152,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 ),
             )
 
-        # Create job with enhanced error handling
         job = Job(
             id=job_id,
             status=JobStatus.PENDING,
@@ -120,7 +165,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
             await job_service.create_job(job)
         except Exception as e:
             logger.error(f"Job creation error: {str(e)}")
-            # Try to clean up the uploaded file
             try:
                 await file_service.delete_file(file_id)
             except Exception:
@@ -130,7 +174,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 detail=f"Failed to create processing job: {str(e)}. Please try again.",
             )
 
-        # Start analysis in background with enhanced error handling
         try:
             background_tasks.add_task(
                 analysis_service.start_analysis_pipeline,
@@ -139,24 +182,19 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 file_path=file_path,
             )
         except Exception as e:
-            # Log error but don't fail the upload since file is already saved
             logger.warning(f"Failed to start analysis pipeline: {str(e)}")
 
-        # Ensure response is properly formatted
         response = UploadResponse(
             job_id=job_id, file_id=file_id, filename=file.filename or "unknown", status="uploaded"
         )
-
         logger.info(
             f"Upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}"
         )
         return response
 
     except HTTPException:
-        # Re-raise HTTP exceptions as-is
         raise
     except Exception as e:
-        # Catch-all for unexpected errors with detailed logging
         logger.error(f"Unexpected upload error: {str(e)}")
         traceback.print_exc()
         raise HTTPException(
@@ -166,7 +204,6 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 "contact support if the problem persists."
             ),
         )
-
 
 @router.get("/{document_id}/status")
 async def get_document_status(document_id: str):
