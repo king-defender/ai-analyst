@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 # Add the backend directory to Python path
-sys.path.insert(0, '/home/runner/work/ai-analyst/ai-analyst/backend')
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
 from fastapi.testclient import TestClient
 from main import app

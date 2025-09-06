@@ -7,7 +7,8 @@ import sys
 import json
 
 # Add the backend directory to Python path
-sys.path.insert(0, '/home/runner/work/ai-analyst/ai-analyst/backend')
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 def test_allowed_content_types():
     """Test that our allowed content types include the new formats"""

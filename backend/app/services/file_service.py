@@ -1,4 +1,5 @@
 import aiofiles
+import json
 from typing import Optional, Dict, Any
 from fastapi import UploadFile
 from pathlib import Path
@@ -110,8 +111,6 @@ class FileService:
                     async with aiofiles.open(file_path, "r", encoding="utf-8") as f:
                         content = await f.read()
                         # Validate JSON format
-                        import json
-
                         json.loads(content)
                         return content
                 except (json.JSONDecodeError, UnicodeDecodeError):
