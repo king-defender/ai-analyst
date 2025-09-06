@@ -51,3 +51,12 @@ export interface ErrorResponse {
   details?: any;
   code?: string;
 }
+
+export interface ApiError {
+  name: string;
+  message: string;
+  type: 'rate_limit' | 'file_too_large' | 'unsupported_format' | 'validation_error' | 'server_error' | 'network_error' | 'unknown_error';
+  status: number;
+  retryable: boolean;
+  retryAfter?: string; // seconds to wait before retry (for rate limiting)
+}

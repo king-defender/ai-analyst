@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
-import { uploadDocument } from '@/lib/api';
-import { UploadResponse } from '@/types/api';
+import { uploadDocument, isApiError } from '@/lib/api';
+import { UploadResponse, ApiError } from '@/types/api';
 
 interface UseFileUploadOptions {
   onSuccess?: (response: UploadResponse) => void;
-  onError?: (error: string) => void;
+  onError?: (error: ApiError | string) => void;
   acceptedTypes?: string[];
   maxSize?: number; // in bytes
 }
@@ -19,10 +19,10 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadResponse | null>(null);
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     // Check file size
     if (file.size > maxSize) {
       return `File size must be less than ${maxSize / 1024 / 1024}MB`;
@@ -35,7 +35,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     }
 
     return null;
-  };
+  }, [maxSize, acceptedTypes]);
 
   const uploadFile = useCallback(async (file: File) => {
     const validationError = validateFile(file);
@@ -70,14 +70,24 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
       setUploadedFile(response);
       onSuccess?.(response);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
-      setError(errorMessage);
-      onError?.(errorMessage);
+      let errorToSet: ApiError | string;
+      
+      if (isApiError(err)) {
+        // It's an ApiError
+        errorToSet = err;
+      } else if (err instanceof Error) {
+        errorToSet = err.message;
+      } else {
+        errorToSet = 'Upload failed';
+      }
+      
+      setError(errorToSet);
+      onError?.(errorToSet);
     } finally {
       setUploading(false);
       setTimeout(() => setProgress(0), 1000);
     }
-  }, [maxSize, acceptedTypes, onSuccess, onError]);
+  }, [onSuccess, onError, validateFile]);
 
   const reset = useCallback(() => {
     setUploading(false);
@@ -86,6 +96,14 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     setUploadedFile(null);
   }, []);
 
+  const retry = useCallback(() => {
+    if (error && typeof error === 'object' && error.retryable) {
+      setError(null);
+      return true; // Indicate that retry is possible
+    }
+    return false;
+  }, [error]);
+
   return {
     uploadFile,
     uploading,
@@ -93,5 +111,6 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
     error,
     uploadedFile,
     reset,
+    retry,
   };
 }

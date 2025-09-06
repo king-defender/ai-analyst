@@ -1,6 +1,100 @@
-import { UploadResponse, JobStatusResponse } from '@/types/api';
+import { UploadResponse, JobStatusResponse, ApiError } from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * Type guard to check if an error is an ApiError
+ */
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'name' in error &&
+    'message' in error &&
+    'type' in error &&
+    'status' in error &&
+    'retryable' in error &&
+    typeof (error as any).name === 'string' &&
+    typeof (error as any).message === 'string' &&
+    typeof (error as any).type === 'string' &&
+    typeof (error as any).status === 'number' &&
+    typeof (error as any).retryable === 'boolean'
+  );
+}
+
+/**
+ * Enhanced error handling with specific error types
+ */
+function createApiError(response: Response, errorData?: any): ApiError {
+  const status = response.status;
+  const statusText = response.statusText;
+  
+  // Categorize errors by status code
+  switch (status) {
+    case 429:
+      return {
+        name: 'RateLimitError',
+        type: 'rate_limit',
+        message: 'Too many requests. Please wait a moment before trying again.',
+        status,
+        retryAfter: response.headers.get('retry-after') || '60',
+        retryable: true
+      };
+    case 413:
+      return {
+        name: 'FileTooLargeError',
+        type: 'file_too_large',
+        message: 'File size exceeds the maximum limit of 50MB.',
+        status,
+        retryable: false
+      };
+    case 415:
+      return {
+        name: 'UnsupportedFormatError',
+        type: 'unsupported_format',
+        message: 'File format not supported. Please upload PDF, TXT, or DOCX files.',
+        status,
+        retryable: false
+      };
+    case 400:
+      return {
+        name: 'ValidationError',
+        type: 'validation_error',
+        message: errorData?.detail || errorData?.error || 'Invalid file or request.',
+        status,
+        retryable: false
+      };
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return {
+        name: 'ServerError',
+        type: 'server_error',
+        message: 'Server error occurred. Please try again in a few moments.',
+        status,
+        retryable: true
+      };
+    default:
+      // Network errors or other issues
+      if (status === 0 || !status) {
+        return {
+          name: 'NetworkError',
+          type: 'network_error',
+          message: 'Network connection failed. Please check your internet connection.',
+          status: 0,
+          retryable: true
+        };
+      }
+      return {
+        name: 'UnknownError',
+        type: 'unknown_error',
+        message: errorData?.detail || errorData?.error || `Upload failed (${status} ${statusText})`,
+        status,
+        retryable: true
+      };
+  }
+}
 
 /**
  * Upload a document file for analysis
@@ -9,32 +103,39 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
-    method: 'POST',
-    headers: {
-      // Don't set Content-Type manually - let browser set it with boundary for multipart/form-data
-    },
-    body: formData,
-    // Add credentials and CORS options for better compatibility
-    credentials: 'include',
-    mode: 'cors',
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
+      method: 'POST',
+      headers: {
+        // Don't set Content-Type manually - let browser set it with boundary for multipart/form-data
+      },
+      body: formData,
+      // Add credentials and CORS options for better compatibility
+      credentials: 'include',
+      mode: 'cors',
+    });
 
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch {
-      // If response is not JSON (empty response), provide a fallback
-      errorData = { 
-        error: response.status === 429 ? 'Rate limit exceeded. Please try again in a moment.' : 'Upload failed',
-        status: response.status
-      };
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        // If response is not JSON (empty response), errorData will be undefined
+        errorData = undefined;
+      }
+      const apiError = createApiError(response, errorData);
+      throw apiError;
     }
-    throw new Error(errorData.detail || errorData.error || `Upload failed (${response.status})`);
-  }
 
-  return response.json();
+    return response.json();
+  } catch (error) {
+    // Handle network errors (fetch failures, timeouts, etc.)
+    if (error instanceof TypeError) {
+      throw createApiError(new Response(null, { status: 0 }));
+    }
+    // Re-throw API errors as-is
+    throw error;
+  }
 }
 
 /**

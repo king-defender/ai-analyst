@@ -24,6 +24,53 @@ describe('FileUpload Component', () => {
     expect(screen.getByText('Uploading...')).toBeInTheDocument();
   });
 
+  test('displays error with retry button for retryable errors', () => {
+    const mockRetry = jest.fn();
+    const mockApiError = {
+      name: 'RateLimitError',
+      type: 'rate_limit' as const,
+      message: 'Too many requests. Please wait a moment before trying again.',
+      status: 429,
+      retryable: true,
+      retryAfter: '60'
+    };
+    
+    render(
+      <FileUpload 
+        onFileUpload={mockOnFileUpload} 
+        uploadStatus="error"
+        error={mockApiError}
+        onRetry={mockRetry}
+      />
+    );
+    
+    expect(screen.getByText('Rate limit exceeded')).toBeInTheDocument();
+    expect(screen.getByText('Too many requests. Please wait a moment before trying again.')).toBeInTheDocument();
+    expect(screen.getByText('Try Again')).toBeInTheDocument();
+  });
+
+  test('displays error without retry button for non-retryable errors', () => {
+    const mockApiError = {
+      name: 'FileTooLargeError',
+      type: 'file_too_large' as const,
+      message: 'File size exceeds the maximum limit of 50MB.',
+      status: 413,
+      retryable: false
+    };
+    
+    render(
+      <FileUpload 
+        onFileUpload={mockOnFileUpload} 
+        uploadStatus="error"
+        error={mockApiError}
+      />
+    );
+    
+    expect(screen.getByText('File too large')).toBeInTheDocument();
+    expect(screen.getByText('File size exceeds the maximum limit of 50MB.')).toBeInTheDocument();
+    expect(screen.queryByText('Try Again')).not.toBeInTheDocument();
+  });
+
   test('displays custom accepted types', () => {
     const customTypes = ['.pdf', '.doc'];
     render(

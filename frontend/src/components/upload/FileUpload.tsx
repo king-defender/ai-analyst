@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle, CheckCircle, RefreshCw, Clock, WifiOff } from 'lucide-react';
+import { ApiError } from '@/types/api';
 
 interface FileUploadProps {
   onFileUpload: (file: File) => void;
@@ -10,7 +11,8 @@ interface FileUploadProps {
   uploadProgress?: number;
   acceptedTypes?: string[];
   uploadStatus?: 'idle' | 'uploading' | 'success' | 'error';
-  error?: string | null;
+  error?: ApiError | string | null;
+  onRetry?: () => void;
 }
 
 export default function FileUpload({ 
@@ -19,7 +21,8 @@ export default function FileUpload({
   uploadProgress = 0,
   acceptedTypes = ['.pdf', '.txt', '.docx'],
   uploadStatus = 'idle',
-  error: externalError
+  error: externalError,
+  onRetry
 }: FileUploadProps) {
   const [internalError, setInternalError] = useState<string | null>(null);
   
@@ -66,6 +69,17 @@ export default function FileUpload({
       case 'success':
         return <CheckCircle className="h-12 w-12 text-green-500" />;
       case 'error':
+        // Show different icons based on error type
+        if (displayError && typeof displayError === 'object') {
+          switch (displayError.type) {
+            case 'network_error':
+              return <WifiOff className="h-12 w-12 text-red-500" />;
+            case 'rate_limit':
+              return <Clock className="h-12 w-12 text-orange-500" />;
+            default:
+              return <AlertCircle className="h-12 w-12 text-red-500" />;
+          }
+        }
         return <AlertCircle className="h-12 w-12 text-red-500" />;
       default:
         return <Upload className="h-12 w-12 text-gray-400" />;
@@ -85,15 +99,38 @@ export default function FileUpload({
           subtitle: 'Your file is being processed'
         };
       case 'error':
+        if (displayError && typeof displayError === 'object') {
+          return {
+            title: getErrorTitle(displayError.type),
+            subtitle: displayError.message
+          };
+        }
         return {
           title: 'Upload failed',
-          subtitle: 'Please try again'
+          subtitle: typeof displayError === 'string' ? displayError : 'Please try again'
         };
       default:
         return {
           title: isDragActive ? 'Drop your file here' : 'Upload your pitch deck',
           subtitle: isDragActive ? 'Release to upload' : 'Drag & drop or click to select'
         };
+    }
+  };
+
+  const getErrorTitle = (errorType: string) => {
+    switch (errorType) {
+      case 'rate_limit':
+        return 'Rate limit exceeded';
+      case 'network_error':
+        return 'Connection failed';
+      case 'file_too_large':
+        return 'File too large';
+      case 'unsupported_format':
+        return 'Unsupported format';
+      case 'server_error':
+        return 'Server error';
+      default:
+        return 'Upload failed';
     }
   };
 
@@ -151,9 +188,55 @@ export default function FileUpload({
       </div>
 
       {displayError && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-          <span className="text-red-700">{displayError}</span>
+        <div className={`mt-4 p-4 rounded-lg border flex flex-col space-y-3 ${
+          displayError && typeof displayError === 'object' && displayError.type === 'rate_limit' 
+            ? 'bg-orange-50 border-orange-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center space-x-2">
+            {displayError && typeof displayError === 'object' ? (
+              <>
+                {displayError.type === 'network_error' && <WifiOff className="h-5 w-5 text-red-500 flex-shrink-0" />}
+                {displayError.type === 'rate_limit' && <Clock className="h-5 w-5 text-orange-500 flex-shrink-0" />}
+                {displayError.type === 'server_error' && <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />}
+                {!['network_error', 'rate_limit', 'server_error'].includes(displayError.type) && <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />}
+                <div className="flex-1">
+                  <p className={`font-medium ${
+                    displayError.type === 'rate_limit' ? 'text-orange-800' : 'text-red-800'
+                  }`}>
+                    {getErrorTitle(displayError.type)}
+                  </p>
+                  <p className={`text-sm ${
+                    displayError.type === 'rate_limit' ? 'text-orange-700' : 'text-red-700'
+                  }`}>
+                    {displayError.message}
+                  </p>
+                  {displayError.retryAfter && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      Please wait {displayError.retryAfter} seconds before retrying.
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                <span className="text-red-700">{displayError}</span>
+              </>
+            )}
+          </div>
+          
+          {/* Retry button for retryable errors */}
+          {displayError && typeof displayError === 'object' && displayError.retryable && onRetry && (
+            <button
+              onClick={onRetry}
+              disabled={isUploading}
+              className="self-start flex items-center space-x-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Try Again</span>
+            </button>
+          )}
         </div>
       )}
     </div>
