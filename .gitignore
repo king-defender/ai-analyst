@@ -40,6 +40,10 @@ yarn-error.log*
 .next/
 out/
 
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
 # Environment files
 .env
 .env.local
