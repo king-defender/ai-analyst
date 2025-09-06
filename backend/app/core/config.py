@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     
     # CORS
     ALLOWED_HOSTS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"]
+
+    # API Host and Port (for Docker Compose compatibility)
+    API_HOST: str = "0.0.0.0"
+    API_PORT: int = 8000
     
     # Google Cloud
     GOOGLE_CLOUD_PROJECT: str = ""
