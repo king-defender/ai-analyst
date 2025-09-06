@@ -1,4 +1,5 @@
 import { UploadResponse, JobStatusResponse, ApiError } from '@/types/api';
+import { StartupData, InvestorMemo, BenchmarkData, RiskAssessment } from '@/types/startup';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -14,18 +15,18 @@ export function isApiError(error: unknown): error is ApiError {
     'type' in error &&
     'status' in error &&
     'retryable' in error &&
-    typeof (error as any).name === 'string' &&
-    typeof (error as any).message === 'string' &&
-    typeof (error as any).type === 'string' &&
-    typeof (error as any).status === 'number' &&
-    typeof (error as any).retryable === 'boolean'
+    typeof (error as Record<string, unknown>).name === 'string' &&
+    typeof (error as Record<string, unknown>).message === 'string' &&
+    typeof (error as Record<string, unknown>).type === 'string' &&
+    typeof (error as Record<string, unknown>).status === 'number' &&
+    typeof (error as Record<string, unknown>).retryable === 'boolean'
   );
 }
 
 /**
  * Enhanced error handling with specific error types
  */
-function createApiError(response: Response, errorData?: any): ApiError {
+function createApiError(response: Response, errorData?: Record<string, unknown>): ApiError {
   const status = response.status;
   const statusText = response.statusText;
   
@@ -52,7 +53,7 @@ function createApiError(response: Response, errorData?: any): ApiError {
       return {
         name: 'UnsupportedFormatError',
         type: 'unsupported_format',
-        message: 'File format not supported. Please upload PDF, TXT, or DOCX files.',
+        message: 'File format not supported. Please upload PDF, TXT, DOCX, XLS, XLSX, or JSON files.',
         status,
         retryable: false
       };
@@ -60,7 +61,7 @@ function createApiError(response: Response, errorData?: any): ApiError {
       return {
         name: 'ValidationError',
         type: 'validation_error',
-        message: errorData?.detail || errorData?.error || 'Invalid file or request.',
+        message: (errorData?.detail as string) || (errorData?.error as string) || 'Invalid file or request.',
         status,
         retryable: false
       };
@@ -89,7 +90,7 @@ function createApiError(response: Response, errorData?: any): ApiError {
       return {
         name: 'UnknownError',
         type: 'unknown_error',
-        message: errorData?.detail || errorData?.error || `Upload failed (${status} ${statusText})`,
+        message: (errorData?.detail as string) || (errorData?.error as string) || `Upload failed (${status} ${statusText})`,
         status,
         retryable: true
       };
@@ -169,7 +170,7 @@ export async function exportMemoPDF(memoId: string): Promise<Blob> {
 /**
  * Get extracted data from a document
  */
-export async function getExtractedData(documentId: string): Promise<any> {
+export async function getExtractedData(documentId: string): Promise<StartupData> {
   const response = await fetch(`${API_BASE_URL}/api/documents/${documentId}/extracted-data`);
 
   if (!response.ok) {
@@ -183,7 +184,7 @@ export async function getExtractedData(documentId: string): Promise<any> {
 /**
  * Generate an investment memo from analysis results
  */
-export async function generateMemo(fileId: string): Promise<any> {
+export async function generateMemo(fileId: string): Promise<InvestorMemo> {
   const response = await fetch(`${API_BASE_URL}/api/memos/generate`, {
     method: 'POST',
     headers: {
@@ -203,7 +204,7 @@ export async function generateMemo(fileId: string): Promise<any> {
 /**
  * Get benchmark data for a file
  */
-export async function getBenchmarkData(fileId: string): Promise<any> {
+export async function getBenchmarkData(fileId: string): Promise<BenchmarkData> {
   const response = await fetch(`${API_BASE_URL}/api/analysis/${fileId}/benchmarks`);
 
   if (!response.ok) {
@@ -217,7 +218,7 @@ export async function getBenchmarkData(fileId: string): Promise<any> {
 /**
  * Get risk assessment for a file
  */
-export async function getRiskAssessment(fileId: string): Promise<any> {
+export async function getRiskAssessment(fileId: string): Promise<RiskAssessment> {
   const response = await fetch(`${API_BASE_URL}/api/analysis/${fileId}/risks`);
 
   if (!response.ok) {

@@ -48,7 +48,7 @@ export interface JobStatusResponse {
 
 export interface ErrorResponse {
   error: string;
-  details?: any;
+  details?: Record<string, unknown>;
   code?: string;
 }
 

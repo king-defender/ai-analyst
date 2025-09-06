@@ -13,7 +13,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   const { 
     onSuccess, 
     onError, 
-    acceptedTypes = ['.pdf', '.txt', '.docx'],
+    acceptedTypes = ['.pdf', '.txt', '.docx', '.json'],
     maxSize = 50 * 1024 * 1024 // 50MB default
   } = options;
   
@@ -22,7 +22,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   const [error, setError] = useState<ApiError | string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadResponse | null>(null);
 
-  const validateFile = useCallback((file: File): string | null => {
+  const validateFile = useCallback(async (file: File): Promise<string | null> => {
     // Check file size
     if (file.size > maxSize) {
       return `File size must be less than ${maxSize / 1024 / 1024}MB`;
@@ -34,11 +34,21 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
       return `File type not supported. Please upload: ${acceptedTypes.join(', ')}`;
     }
 
+    // Additional JSON validation
+    if (fileExtension === '.json') {
+      try {
+        const text = await file.text();
+        JSON.parse(text);
+      } catch (error) {
+        return 'Invalid JSON file. Please ensure the file contains valid JSON data.';
+      }
+    }
+
     return null;
   }, [maxSize, acceptedTypes]);
 
   const uploadFile = useCallback(async (file: File) => {
-    const validationError = validateFile(file);
+    const validationError = await validateFile(file);
     if (validationError) {
       setError(validationError);
       onError?.(validationError);

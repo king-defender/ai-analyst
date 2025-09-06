@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getJobStatus } from '@/lib/api';
-import { JobStatus } from '@/components/status/JobTracker';
+import { JobStatusResponse } from '@/types/api';
 
 interface UseJobStatusOptions {
   pollingInterval?: number;
@@ -13,12 +13,12 @@ export function useJobStatus(
 ) {
   const { pollingInterval = 2000, autoStart = true } = options;
   
-  const [status, setStatus] = useState<JobStatus | null>(null);
+  const [status, setStatus] = useState<JobStatusResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     if (!jobId) return;
 
     try {
@@ -33,7 +33,7 @@ export function useJobStatus(
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId]);
 
   const startPolling = () => {
     setIsPolling(true);
@@ -48,7 +48,7 @@ export function useJobStatus(
     
     fetchStatus();
     startPolling();
-  }, [jobId, autoStart]);
+  }, [jobId, autoStart, fetchStatus]);
 
   useEffect(() => {
     if (!isPolling || !jobId) return;
@@ -56,7 +56,7 @@ export function useJobStatus(
     const interval = setInterval(fetchStatus, pollingInterval);
     
     return () => clearInterval(interval);
-  }, [isPolling, jobId, pollingInterval]);
+  }, [isPolling, jobId, pollingInterval, fetchStatus]);
 
   // Stop polling when job is completed or failed
   useEffect(() => {
