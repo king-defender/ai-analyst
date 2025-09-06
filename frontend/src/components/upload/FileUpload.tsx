@@ -19,7 +19,7 @@ export default function FileUpload({
   onFileUpload, 
   isUploading = false,
   uploadProgress = 0,
-  acceptedTypes = ['.pdf', '.txt', '.docx'],
+  acceptedTypes = ['.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.json'],
   uploadStatus = 'idle',
   error: externalError,
   onRetry
@@ -34,7 +34,7 @@ export default function FileUpload({
     if (fileRejections.length > 0) {
       const rejection = fileRejections[0];
       if (rejection.errors.some((e) => e.code === 'file-invalid-type')) {
-        setInternalError('Please upload a valid PDF, TXT, or DOCX file');
+        setInternalError('Please upload a valid PDF, TXT, DOC, DOCX, XLS, XLSX, or JSON file');
       } else if (rejection.errors.some((e) => e.code === 'file-too-large')) {
         setInternalError('File size is too large. Maximum size is 50MB');
       } else {
@@ -53,7 +53,11 @@ export default function FileUpload({
     accept: {
       'application/pdf': ['.pdf'],
       'text/plain': ['.txt'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/msword': ['.doc'],
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/json': ['.json']
     },
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024, // 50MB
