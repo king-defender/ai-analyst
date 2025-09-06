@@ -15,7 +15,20 @@ describe('FileUpload Component', () => {
     
     expect(screen.getByText('Upload your pitch deck')).toBeInTheDocument();
     expect(screen.getByText('Drag & drop or click to select')).toBeInTheDocument();
-    expect(screen.getByText('Supports: .pdf, .txt, .docx')).toBeInTheDocument();
+    expect(screen.getByText('Supports: .pdf, .txt, .doc, .docx, .xls, .xlsx, .json')).toBeInTheDocument();
+  });
+
+  test('renders with new file format support', () => {
+    render(<FileUpload onFileUpload={mockOnFileUpload} />);
+    
+    const supportedFormats = screen.getByText(/Supports:/);
+    expect(supportedFormats).toBeInTheDocument();
+    
+    // Check that all new formats are listed
+    expect(supportedFormats.textContent).toContain('.doc');
+    expect(supportedFormats.textContent).toContain('.xls');
+    expect(supportedFormats.textContent).toContain('.xlsx');
+    expect(supportedFormats.textContent).toContain('.json');
   });
 
   test('shows uploading state', () => {

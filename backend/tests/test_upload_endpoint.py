@@ -110,6 +110,126 @@ class TestUploadEndpoint:
         finally:
             os.unlink(tmp_file_path)
     
+    def test_upload_valid_doc(self):
+        """Test successful DOC upload."""
+        # Create a test DOC file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".doc") as tmp_file:
+            # Simple DOC format header + content
+            tmp_file.write(b'\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1\x00\x00\x00\x00' + b'Test DOC content for startup analysis')
+            tmp_file_path = tmp_file.name
+        
+        try:
+            with open(tmp_file_path, "rb") as file:
+                files = {"file": ("test.doc", file, "application/msword")}
+                headers = {"Origin": "http://localhost:3000"}
+                response = requests.post(self.UPLOAD_URL, files=files, headers=headers)
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "job_id" in data
+            assert "file_id" in data
+            assert data["filename"] == "test.doc"
+            assert data["status"] == "uploaded"
+            
+        finally:
+            os.unlink(tmp_file_path)
+    
+    def test_upload_valid_docx(self):
+        """Test successful DOCX upload."""
+        # Create a test DOCX file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
+            # Minimal DOCX (ZIP) format
+            tmp_file.write(b'PK\x03\x04\x14\x00\x00\x00\x08\x00' + b'Test DOCX content for startup analysis')
+            tmp_file_path = tmp_file.name
+        
+        try:
+            with open(tmp_file_path, "rb") as file:
+                files = {"file": ("test.docx", file, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
+                headers = {"Origin": "http://localhost:3000"}
+                response = requests.post(self.UPLOAD_URL, files=files, headers=headers)
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "job_id" in data
+            assert "file_id" in data
+            assert data["filename"] == "test.docx"
+            assert data["status"] == "uploaded"
+            
+        finally:
+            os.unlink(tmp_file_path)
+    
+    def test_upload_valid_xls(self):
+        """Test successful XLS upload."""
+        # Create a test XLS file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xls") as tmp_file:
+            # Minimal XLS format
+            tmp_file.write(b'\x09\x08\x08\x00\x00\x00\x10\x00' + b'Test XLS content for startup financial data')
+            tmp_file_path = tmp_file.name
+        
+        try:
+            with open(tmp_file_path, "rb") as file:
+                files = {"file": ("test.xls", file, "application/vnd.ms-excel")}
+                headers = {"Origin": "http://localhost:3000"}
+                response = requests.post(self.UPLOAD_URL, files=files, headers=headers)
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "job_id" in data
+            assert "file_id" in data
+            assert data["filename"] == "test.xls"
+            assert data["status"] == "uploaded"
+            
+        finally:
+            os.unlink(tmp_file_path)
+    
+    def test_upload_valid_xlsx(self):
+        """Test successful XLSX upload."""
+        # Create a test XLSX file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp_file:
+            # Minimal XLSX (ZIP) format
+            tmp_file.write(b'PK\x03\x04\x14\x00\x00\x00\x08\x00' + b'Test XLSX content for startup financial data')
+            tmp_file_path = tmp_file.name
+        
+        try:
+            with open(tmp_file_path, "rb") as file:
+                files = {"file": ("test.xlsx", file, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+                headers = {"Origin": "http://localhost:3000"}
+                response = requests.post(self.UPLOAD_URL, files=files, headers=headers)
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "job_id" in data
+            assert "file_id" in data
+            assert data["filename"] == "test.xlsx"
+            assert data["status"] == "uploaded"
+            
+        finally:
+            os.unlink(tmp_file_path)
+    
+    def test_upload_valid_json(self):
+        """Test successful JSON upload."""
+        # Create a test JSON file
+        json_content = '{"company": "Test Startup", "revenue": 1000000, "employees": 25}'
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as tmp_file:
+            tmp_file.write(json_content.encode('utf-8'))
+            tmp_file_path = tmp_file.name
+        
+        try:
+            with open(tmp_file_path, "rb") as file:
+                files = {"file": ("test.json", file, "application/json")}
+                headers = {"Origin": "http://localhost:3000"}
+                response = requests.post(self.UPLOAD_URL, files=files, headers=headers)
+            
+            assert response.status_code == 200
+            data = response.json()
+            assert "job_id" in data
+            assert "file_id" in data
+            assert data["filename"] == "test.json"
+            assert data["status"] == "uploaded"
+            
+        finally:
+            os.unlink(tmp_file_path)
+
     def test_upload_invalid_file_type(self):
         """Test upload with invalid file type."""
         # Create a test image file
@@ -127,7 +247,7 @@ class TestUploadEndpoint:
             data = response.json()
             assert "detail" in data
             assert "not supported" in data["detail"]
-            assert "PDF, TXT, or DOCX" in data["detail"]
+            assert "PDF, TXT, DOC, DOCX, XLS, XLSX, or JSON" in data["detail"]
             
         finally:
             os.unlink(tmp_file_path)
