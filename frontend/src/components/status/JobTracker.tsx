@@ -35,11 +35,17 @@ export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
   useEffect(() => {
     if (!jobId) return;
 
+    let stopped = false;
+
     const pollStatus = async () => {
       try {
         const response = await fetch(`/api/jobs/${jobId}/status`);
+        if (response.status === 404) {
+          setJobStatus(null);
+          stopped = true;
+          return;
+        }
         const status: JobStatus = await response.json();
-        
         setJobStatus(status);
         onStatusChange?.(status);
 
@@ -48,23 +54,45 @@ export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
         if (stageIndex >= 0) {
           setCurrentStageIndex(stageIndex);
         }
+        if (status.status === 'completed' || status.status === 'failed') {
+          stopped = true;
+        }
       } catch (error) {
         console.error('Error polling job status:', error);
       }
     };
 
     // Poll every 2 seconds
-    const interval = setInterval(pollStatus, 2000);
+    const interval = setInterval(() => {
+      if (!stopped) pollStatus();
+    }, 2000);
     pollStatus(); // Initial call
 
     return () => clearInterval(interval);
   }, [jobId, onStatusChange]);
 
   if (!jobStatus) {
+    const handleReset = () => {
+      window.location.reload();
+    };
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Loading job status...</span>
+      <div className="flex flex-col items-center justify-center p-8">
+        <div className="flex items-center mb-2">
+          <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
+          <span className="text-red-600 font-semibold">Job not found or expired.</span>
+        </div>
+        <ul className="mb-4 text-sm text-red-500 list-disc list-inside">
+          <li>The job may have expired due to backend restart (MVP uses in-memory jobs).</li>
+          <li>The job ID may be invalid or the file was never uploaded.</li>
+          <li>If you restarted the backend, all jobs are lost. Please re-upload your file.</li>
+          <li>If this persists, check backend logs for errors or contact support.</li>
+        </ul>
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Reset & Upload New File
+        </button>
       </div>
     );
   }

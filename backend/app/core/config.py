@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True  # Default to True for development
     ENVIRONMENT: str = "development"
     
+    API_VERSION: str = "v1"
+    LOG_LEVEL: str = "INFO"
+
     # CORS
     ALLOWED_HOSTS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"]
 

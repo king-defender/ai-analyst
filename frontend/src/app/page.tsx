@@ -38,6 +38,7 @@ export default function Home() {
     }
   });
 
+
   const { status } = useJobStatus(jobId, {
     autoStart: true,
   });
@@ -55,13 +56,28 @@ export default function Home() {
     }
   };
 
-  // Handle analysis completion
+  // Fetch analysis result when job is completed
   useEffect(() => {
-    if (status?.status === 'completed' && status.result) {
-      setAnalysisResult(status.result);
-      setCurrentStep('results');
+    const fetchAnalysisResult = async () => {
+      if (!jobId) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/analysis/${jobId}/result`);
+        if (res.ok) {
+          const data = await res.json();
+          setAnalysisResult(data.result);
+          setCurrentStep('results');
+        } else if (res.status === 404) {
+          setUploadStatus('error');
+          setCurrentStep('upload');
+        }
+      } catch (err) {
+        setUploadStatus('error');
+      }
+    };
+    if (status?.status === 'completed') {
+      fetchAnalysisResult();
     }
-  }, [status]);
+  }, [status, jobId]);
 
   const handleExportPDF = async () => {
     if (!jobId) return;
