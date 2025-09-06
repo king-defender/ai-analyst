@@ -31,7 +31,8 @@ app = FastAPI(
 )
 
 # CORS middleware - configured for development and production
-allowed_origins = ["*"] if settings.DEBUG else settings.ALLOWED_HOSTS
+# Note: Cannot use allow_origins=["*"] with allow_credentials=True
+allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"] if settings.DEBUG else settings.ALLOWED_HOSTS
 
 app.add_middleware(
     CORSMiddleware,
