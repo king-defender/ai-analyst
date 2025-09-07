@@ -2,28 +2,37 @@ from typing import Dict, Optional, List
 from datetime import datetime
 from app.models.startup import Job, JobStatus, JobStage
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
-import json
-import json
-from google.cloud import firestore
-import uuid
 
+from fastapi import APIRouter, UploadFile, File, HTTPException
+import logging
 import os
-if os.environ.get("FIRESTORE_EMULATOR_HOST"):
-    db = firestore.Client(project="demo-project")
-else:
-    db = firestore.Client()
+import json
+import uuid
+from google.cloud import firestore
+
 JOBS_COLLECTION = "analysis_jobs"
 
 import logging
 
+def _get_firestore_client():
+    """Get Firestore client - lazy initialization for testing."""
+    if os.environ.get("TESTING") == "true":
+        from unittest.mock import Mock
+        return Mock()
+    elif os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        return firestore.Client(project="demo-project")
+    else:
+        return firestore.Client()
+
 def save_job(job_id, job_data):
     logging.info(f"Saving job {job_id} to Firestore with data: {job_data}")
+    db = _get_firestore_client()
     db.collection(JOBS_COLLECTION).document(job_id).set(job_data)
     logging.info(f"Job {job_id} saved.")
 
 def get_job(job_id):
     logging.info(f"Retrieving job {job_id} from Firestore.")
+    db = _get_firestore_client()
     doc = db.collection(JOBS_COLLECTION).document(job_id).get()
     if doc.exists:
         logging.info(f"Job {job_id} found: {doc.to_dict()}")
@@ -32,6 +41,7 @@ def get_job(job_id):
     return None
 
 def delete_job(job_id):
+    db = _get_firestore_client()
     db.collection(JOBS_COLLECTION).document(job_id).delete()
 
 router = APIRouter()
