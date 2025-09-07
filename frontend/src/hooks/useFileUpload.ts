@@ -14,7 +14,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   const { 
     onSuccess, 
     onError, 
-    acceptedTypes = ['.pdf', '.txt', '.docx', '.json'],
+    acceptedTypes = ['.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.json'],
     maxSize = 50 * 1024 * 1024 // 50MB default
   } = options;
   

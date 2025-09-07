@@ -41,7 +41,7 @@ export function validateFileSize(file: File, maxSizeBytes: number): FileValidati
  * Validates file type based on extension
  */
 export function validateFileType(file: File, acceptedTypes: string[]): FileValidationResult {
-  const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const fileExtension = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
   
   if (!acceptedTypes.includes(fileExtension)) {
     return {
@@ -74,7 +74,7 @@ export async function validateFile(
   }
 
   // Additional JSON validation
-  const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const fileExtension = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
   if (fileExtension === '.json') {
     return await validateJsonFile(file);
   }
