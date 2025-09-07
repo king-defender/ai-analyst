@@ -1,53 +1,31 @@
+"""
+Integration tests for the AI Analyst MVP application.
+"""
 import pytest
 import asyncio
 import io
-import httpx
-from fastapi.testclient import TestClient
-from main import app
+from unittest.mock import patch, Mock
+
 
 class TestDocumentUpload:
     """Test cases for document upload functionality."""
     
-    def test_upload_endpoint_exists(self):
+    def test_upload_endpoint_exists(self, test_client):
         """Test that upload endpoint exists and returns correct status."""
-        try:
-            client = TestClient(app)
-            # Test with no file
-            response = client.post("/api/documents/upload")
-            assert response.status_code in [400, 422]  # Should require file
-            client.close()
-        except TypeError:
-            # Skip test due to TestClient version compatibility
-            pytest.skip("TestClient version compatibility issue")
+        # Test with no file
+        response = test_client.post("/api/documents/upload")
+        assert response.status_code in [400, 422]  # Should require file
     
-    def test_pdf_upload_success(self):
+    def test_pdf_upload_success(self, test_client, test_upload_file):
         """Test successful PDF upload."""
-        try:
-            client = TestClient(app)
-            # Create a simple PDF content
-            pdf_content = b'''%PDF-1.4
-1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
-2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
-3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj
-xref
-0 4
-0000000000 65535 f 
-0000000010 00000 n 
-0000000053 00000 n 
-0000000109 00000 n 
-trailer<</Size 4/Root 1 0 R>>
-startxref
-159
-%%EOF'''
-            
-            files = {"file": ("test.pdf", io.BytesIO(pdf_content), "application/pdf")}
-            response = client.post("/api/documents/upload", files=files)
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert "job_id" in data
-            assert "file_id" in data
-            assert data["filename"] == "test.pdf"
+        files = {"file": ("test.pdf", test_upload_file, "application/pdf")}
+        response = test_client.post("/api/documents/upload", files=files)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "job_id" in data
+        assert "file_id" in data
+        assert data["filename"] == "test.pdf"
             assert data["status"] == "uploaded"
             client.close()
         except TypeError:
