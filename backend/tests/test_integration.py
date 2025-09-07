@@ -1,47 +1,30 @@
+"""
+Integration tests for the AI Analyst MVP application.
+"""
 import pytest
 import asyncio
 import io
-import httpx
+from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
+
+# Import app for testing
 from main import app
+
 
 class TestDocumentUpload:
     """Test cases for document upload functionality."""
     
-    def test_upload_endpoint_exists(self):
+    def test_upload_endpoint_exists(self, test_client):
         """Test that upload endpoint exists and returns correct status."""
-        try:
-            client = TestClient(app)
-            # Test with no file
-            response = client.post("/api/documents/upload")
-            assert response.status_code in [400, 422]  # Should require file
-            client.close()
-        except TypeError:
-            # Skip test due to TestClient version compatibility
-            pytest.skip("TestClient version compatibility issue")
+        # Test with no file
+        response = test_client.post("/api/documents/upload")
+        assert response.status_code in [400, 422]  # Should require file
     
-    def test_pdf_upload_success(self):
+    def test_pdf_upload_success(self, test_client, test_upload_file):
         """Test successful PDF upload."""
         try:
-            client = TestClient(app)
-            # Create a simple PDF content
-            pdf_content = b'''%PDF-1.4
-1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
-2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
-3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj
-xref
-0 4
-0000000000 65535 f 
-0000000010 00000 n 
-0000000053 00000 n 
-0000000109 00000 n 
-trailer<</Size 4/Root 1 0 R>>
-startxref
-159
-%%EOF'''
-            
-            files = {"file": ("test.pdf", io.BytesIO(pdf_content), "application/pdf")}
-            response = client.post("/api/documents/upload", files=files)
+            files = {"file": ("test.pdf", test_upload_file, "application/pdf")}
+            response = test_client.post("/api/documents/upload", files=files)
             
             assert response.status_code == 200
             data = response.json()
@@ -49,18 +32,16 @@ startxref
             assert "file_id" in data
             assert data["filename"] == "test.pdf"
             assert data["status"] == "uploaded"
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_text_upload_success(self):
+    def test_text_upload_success(self, test_client):
         """Test successful text file upload."""
         try:
-            client = TestClient(app)
             content = "This is a test pitch deck content."
             files = {"file": ("test.txt", io.BytesIO(content.encode()), "text/plain")}
-            response = client.post("/api/documents/upload", files=files)
+            response = test_client.post("/api/documents/upload", files=files)
             
             assert response.status_code == 200
             data = response.json()
@@ -68,67 +49,58 @@ startxref
             assert "file_id" in data
             assert data["filename"] == "test.txt"
             assert data["status"] == "uploaded"
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_invalid_file_type(self):
+    def test_invalid_file_type(self, test_client):
         """Test upload with invalid file type."""
         try:
-            client = TestClient(app)
             content = "invalid file content"
             files = {"file": ("test.xyz", io.BytesIO(content.encode()), "application/octet-stream")}
-            response = client.post("/api/documents/upload", files=files)
+            response = test_client.post("/api/documents/upload", files=files)
             
             assert response.status_code == 400
             data = response.json()
             assert "not supported" in data["detail"].lower()
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_file_too_large(self):
+    def test_file_too_large(self, test_client):
         """Test upload with file size exceeding limit."""
         try:
-            client = TestClient(app)
             # Create a large file (over 50MB)
             large_content = b"x" * (51 * 1024 * 1024)  # 51MB
             files = {"file": ("large.txt", io.BytesIO(large_content), "text/plain")}
-            response = client.post("/api/documents/upload", files=files)
+            response = test_client.post("/api/documents/upload", files=files)
             
             assert response.status_code == 400
             data = response.json()
             assert "exceeds" in data["detail"].lower()
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_health_check(self):
+    def test_health_check(self, test_client):
         """Test health check endpoint."""
         try:
-            client = TestClient(app)
-            response = client.get("/api/health")
+            response = test_client.get("/api/health")
             assert response.status_code == 200
             data = response.json()
             assert data["status"] == "healthy"
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_root_endpoint(self):
+    def test_root_endpoint(self, test_client):
         """Test root endpoint."""
         try:
-            client = TestClient(app)
-            response = client.get("/")
+            response = test_client.get("/")
             assert response.status_code == 200
             data = response.json()
             assert "message" in data
             assert "version" in data
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
@@ -309,28 +281,24 @@ class TestDataModels:
 class TestAPIIntegration:
     """Integration tests for API endpoints."""
     
-    def test_api_documentation(self):
+    def test_api_documentation(self, test_client):
         """Test that API documentation is accessible."""
         try:
-            client = TestClient(app)
-            response = client.get("/docs")
+            response = test_client.get("/docs")
             assert response.status_code == 200
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")
     
-    def test_openapi_schema(self):
+    def test_openapi_schema(self, test_client):
         """Test that OpenAPI schema is valid."""
         try:
-            client = TestClient(app)
-            response = client.get("/openapi.json")
+            response = test_client.get("/openapi.json")
             assert response.status_code == 200
             schema = response.json()
             assert "openapi" in schema
             assert "info" in schema
             assert "paths" in schema
-            client.close()
         except TypeError:
             # Skip test due to TestClient version compatibility
             pytest.skip("TestClient version compatibility issue")

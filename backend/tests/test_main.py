@@ -1,28 +1,38 @@
+"""
+Test main application functionality.
+"""
 import pytest
-import asyncio
-from main import app
 
-# Simple tests that don't rely on TestClient for now
-def test_app_creation():
-    """Test that the app is created successfully"""
-    assert app is not None
-    assert app.title == "AI Analyst API"
 
-def test_app_routes():
-    """Test that expected routes are registered"""
-    routes = [route.path for route in app.routes]
-    
-    # Check if main routes exist
-    assert "/" in routes
-    assert "/health" in routes
-    
-    # Check for API routes (may be registered under sub-routers)
-    assert any("/api" in route for route in routes)
+def test_read_main(test_client):
+    """Test main endpoint returns correct response."""
+    response = test_client.get("/")
+    assert response.status_code == 200
+    assert "AI Analyst MVP" in response.json()["message"]
+
+
+def test_health_check(test_client):
+    """Test health check endpoint."""
+    response = test_client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
+
+def test_docs_available(test_client):
+    """Test API documentation is available."""
+    response = test_client.get("/docs")
+    assert response.status_code == 200
+
+
+def test_app_creation(test_client):
+    """Test that the app is created successfully."""
+    # If we can create a test client, the app is working
+    assert test_client is not None
+
 
 @pytest.mark.asyncio
-async def test_basic_functionality():
-    """Test basic app functionality"""
-    # Test that we can import the main components
+async def test_basic_service_imports(mock_all_external_services):
+    """Test that we can import main services without connection errors."""
     from app.services.file_service import FileService
     from app.services.parsing_service import ParsingService
     from app.services.risk_service import RiskService
