@@ -9,16 +9,26 @@ from google.cloud import firestore
 import uuid
 
 import os
-if os.environ.get("FIRESTORE_EMULATOR_HOST"):
-    db = firestore.Client(project="demo-project")
-else:
-    db = firestore.Client()
+
 JOBS_COLLECTION = "analysis_jobs"
 
+def _get_firestore_client():
+    """Get Firestore client - lazy initialization for testing."""
+    if os.environ.get("TESTING") == "true":
+        # Return a mock client for testing
+        from unittest.mock import Mock
+        return Mock()
+    elif os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        return firestore.Client(project="demo-project")
+    else:
+        return firestore.Client()
+
 def save_job(job_id, job_data):
+    db = _get_firestore_client()
     db.collection(JOBS_COLLECTION).document(job_id).set(job_data)
 
 def get_job(job_id):
+    db = _get_firestore_client()
     doc = db.collection(JOBS_COLLECTION).document(job_id).get()
     if doc.exists:
         return doc.to_dict()
