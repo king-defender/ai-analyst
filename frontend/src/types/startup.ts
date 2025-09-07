@@ -257,7 +257,7 @@ export interface InvestmentRecommendation {
 }
 
 export interface MemoAppendix {
-  raw_data: any;
+  raw_data: Record<string, unknown>;
   methodology: string;
   assumptions: string[];
   data_sources: string[];

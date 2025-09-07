@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { uploadDocument, isApiError } from '@/lib/api';
 import { UploadResponse, ApiError } from '@/types/api';
+import { validateFile } from '@/utils/validation';
 
 interface UseFileUploadOptions {
   onSuccess?: (response: UploadResponse) => void;
@@ -13,7 +14,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   const { 
     onSuccess, 
     onError, 
-    acceptedTypes = ['.pdf', '.txt', '.docx'],
+    acceptedTypes = ['.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.json'],
     maxSize = 50 * 1024 * 1024 // 50MB default
   } = options;
   
@@ -22,26 +23,11 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
   const [error, setError] = useState<ApiError | string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadResponse | null>(null);
 
-  const validateFile = useCallback((file: File): string | null => {
-    // Check file size
-    if (file.size > maxSize) {
-      return `File size must be less than ${maxSize / 1024 / 1024}MB`;
-    }
-
-    // Check file type
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!acceptedTypes.includes(fileExtension)) {
-      return `File type not supported. Please upload: ${acceptedTypes.join(', ')}`;
-    }
-
-    return null;
-  }, [maxSize, acceptedTypes]);
-
   const uploadFile = useCallback(async (file: File) => {
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
-      onError?.(validationError);
+    const validationResult = await validateFile(file, acceptedTypes, maxSize);
+    if (!validationResult.isValid) {
+      setError(validationResult.error || 'Validation failed');
+      onError?.(validationResult.error || 'Validation failed');
       return;
     }
 
@@ -87,7 +73,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
       setUploading(false);
       setTimeout(() => setProgress(0), 1000);
     }
-  }, [onSuccess, onError, validateFile]);
+  }, [onSuccess, onError, acceptedTypes, maxSize]);
 
   const reset = useCallback(() => {
     setUploading(false);

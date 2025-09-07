@@ -2,21 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
-
-export interface JobStatus {
-  id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  stage: string;
-  progress?: number;
-  message?: string;
-  created_at: string;
-  updated_at: string;
-  result?: any;
-}
+import { JobStatusResponse } from '@/types/api';
 
 interface JobTrackerProps {
   jobId: string;
-  onStatusChange?: (status: JobStatus) => void;
+  onStatusChange?: (status: JobStatusResponse) => void;
 }
 
 const stages = [
@@ -29,7 +19,7 @@ const stages = [
 ];
 
 export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
-  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatusResponse | null>(null);
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
   useEffect(() => {
@@ -45,7 +35,7 @@ export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
           stopped = true;
           return;
         }
-        const status: JobStatus = await response.json();
+        const status: JobStatusResponse = await response.json();
         setJobStatus(status);
         onStatusChange?.(status);
 

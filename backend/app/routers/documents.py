@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 import uuid
+import json
 import logging
 import traceback
 
@@ -119,10 +120,14 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                 )
 
                 response = UploadResponse(
-                    job_id=job_id, file_id=file_id, filename=file.filename or "unknown", status="uploaded"
+                    job_id=job_id,
+                    file_id=file_id,
+                    filename=file.filename or "unknown",
+                    status="uploaded"
                 )
                 logger.info(
-                    f"JSON upload successful: file_id={file_id}, job_id={job_id}, filename={file.filename}"
+                    f"JSON upload successful: file_id={file_id}, "
+                    f"job_id={job_id}, filename={file.filename}"
                 )
                 return response
             except HTTPException:
