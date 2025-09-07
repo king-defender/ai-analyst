@@ -1,6 +1,7 @@
 from typing import Dict, Optional, List
 from datetime import datetime, timezone
 from app.models.startup import Job, JobStatus, JobStage
+from functools import lru_cache
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import logging
@@ -11,30 +12,24 @@ from google.cloud import firestore
 
 JOBS_COLLECTION = "analysis_jobs"
 
-# Cache for Firestore client to avoid repeated initialization
-_firestore_client = None
 
-
+@lru_cache(maxsize=1)
 def _get_firestore_client():
     """
     Get cached Firestore client - lazy initialization for testing.
 
-    Uses module-level caching to avoid creating new client instances
-    on every operation, improving performance and reducing connection overhead.
+    Uses @lru_cache decorator for thread-safe caching to avoid creating
+    new client instances on every operation, improving performance and
+    reducing connection overhead. The cache ensures only one client
+    instance is created even in multi-threaded environments.
     """
-    global _firestore_client
-
-    if _firestore_client is None:
-        if os.environ.get("TESTING") == "true":
-            from unittest.mock import Mock
-
-            _firestore_client = Mock()
-        elif os.environ.get("FIRESTORE_EMULATOR_HOST"):
-            _firestore_client = firestore.Client(project="demo-project")
-        else:
-            _firestore_client = firestore.Client()
-
-    return _firestore_client
+    if os.environ.get("TESTING") == "true":
+        from unittest.mock import Mock
+        return Mock()
+    elif os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        return firestore.Client(project="demo-project")
+    else:
+        return firestore.Client()
 
 
 def save_job(job_id, job_data):
