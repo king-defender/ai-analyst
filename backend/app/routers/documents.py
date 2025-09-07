@@ -109,7 +109,8 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                     message="JSON uploaded successfully",
                 )
 
-                await job_service.create_job(job)
+                from app.services.job_service import save_job
+                save_job(job_id, job.dict())
                 # Instead of file path, pass the parsed JSON directly
                 background_tasks.add_task(
                     analysis_service.start_analysis_pipeline,
@@ -167,7 +168,8 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
         )
 
         try:
-            await job_service.create_job(job)
+            from app.services.job_service import save_job
+            save_job(job_id, job.dict())
         except Exception as e:
             logger.error(f"Job creation error: {str(e)}")
             try:

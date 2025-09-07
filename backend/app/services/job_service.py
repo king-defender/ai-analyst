@@ -15,13 +15,20 @@ else:
     db = firestore.Client()
 JOBS_COLLECTION = "analysis_jobs"
 
+import logging
+
 def save_job(job_id, job_data):
+    logging.info(f"Saving job {job_id} to Firestore with data: {job_data}")
     db.collection(JOBS_COLLECTION).document(job_id).set(job_data)
+    logging.info(f"Job {job_id} saved.")
 
 def get_job(job_id):
+    logging.info(f"Retrieving job {job_id} from Firestore.")
     doc = db.collection(JOBS_COLLECTION).document(job_id).get()
     if doc.exists:
+        logging.info(f"Job {job_id} found: {doc.to_dict()}")
         return doc.to_dict()
+    logging.warning(f"Job {job_id} not found.")
     return None
 
 def delete_job(job_id):

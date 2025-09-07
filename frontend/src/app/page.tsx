@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Modal from '@/components/Modal';
 import FileUpload from '@/components/upload/FileUpload';
 import JobTracker from '@/components/status/JobTracker';
 import StartupDataDisplay from '@/components/data/StartupDataDisplay';
@@ -56,25 +57,41 @@ export default function Home() {
     }
   };
 
-  // Fetch analysis result when job is completed
+  // Show modal when job is completed and result is available
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (status?.status === 'completed' && status.result) {
+      setAnalysisResult(status.result);
+      setShowModal(true);
+    }
+  }, [status]);
+
+  // Fetch analysis result when job is completed (legacy, can be removed if not needed)
   useEffect(() => {
     const fetchAnalysisResult = async () => {
       if (!jobId) return;
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/analysis/${jobId}/result`);
-        if (res.ok) {
-          const data = await res.json();
-          setAnalysisResult(data.result);
-          setCurrentStep('results');
-        } else if (res.status === 404) {
-          setUploadStatus('error');
-          setCurrentStep('upload');
-        }
-      } catch (err) {
-        setUploadStatus('error');
-      }
-    };
-    if (status?.status === 'completed') {
+      return (
+        <main>
+          <FileUpload
+            onFileUpload={handleFileUpload}
+            isUploading={uploading}
+            uploadProgress={progress}
+            acceptedTypes={['.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.json']}
+            uploadStatus={uploadStatus}
+            error={uploadError}
+            onRetry={handleRetry}
+          />
+          {jobId && <JobTracker jobId={jobId} />}
+          {showModal && analysisResult && (
+            <Modal onClose={() => setShowModal(false)}>
+              <h2>AI Analysis Result</h2>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{JSON.stringify(analysisResult, null, 2)}</pre>
+            </Modal>
+          )}
+          {/* ...other UI... */}
+        </main>
+      );
       fetchAnalysisResult();
     }
   }, [status, jobId]);
