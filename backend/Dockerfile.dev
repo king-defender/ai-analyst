@@ -17,4 +17,7 @@ COPY . .
 # Development mode - mount volume for hot reload
 EXPOSE 8000
 
+# Set Firestore emulator env var for local development
+ENV FIRESTORE_EMULATOR_HOST=firestore-emulator:8080
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

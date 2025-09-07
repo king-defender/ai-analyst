@@ -35,12 +35,12 @@ services:
       - ai-analyst-network
 
   firestore-emulator:
-    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+    build:
+      context: ./infra
+      dockerfile: firestore-emulator.Dockerfile
     ports:
       - "8080:8080"
       - "4000:4000"
-    command: >
-      sh -c "gcloud emulators firestore start --host-port=0.0.0.0:8080"
     networks:
       - ai-analyst-network
 
@@ -50,6 +50,7 @@ services:
       - "9050:9050"
     environment:
       - PORT=9050
+    command: --project=demo-project
     volumes:
       - ./sample_data/benchmarks:/data
     networks:

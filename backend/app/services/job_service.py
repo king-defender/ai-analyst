@@ -1,12 +1,18 @@
 from typing import Dict, Optional, List
 from datetime import datetime
 from app.models.startup import Job, JobStatus, JobStage
+
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import json
 import json
 from google.cloud import firestore
+import uuid
 
-db = firestore.Client()
+import os
+if os.environ.get("FIRESTORE_EMULATOR_HOST"):
+    db = firestore.Client(project="demo-project")
+else:
+    db = firestore.Client()
 JOBS_COLLECTION = "analysis_jobs"
 
 def save_job(job_id, job_data):
