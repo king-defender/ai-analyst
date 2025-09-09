@@ -15,6 +15,29 @@ interface FileUploadProps {
   onRetry?: () => void;
 }
 
+/**
+ * FileUpload Component
+ * 
+ * A comprehensive file upload component with drag-and-drop support, progress tracking,
+ * and robust error handling. Features:
+ * 
+ * - Drag and drop file upload with visual feedback
+ * - Configurable accepted file types via props
+ * - Progress tracking and status indicators
+ * - Comprehensive error handling with retry capabilities
+ * - Dynamic error messages based on acceptedTypes prop
+ * - Support for both string and structured error objects
+ * - ARIA compliant and accessible
+ * 
+ * @param onFileUpload - Callback when file is selected/dropped
+ * @param isUploading - Whether upload is in progress
+ * @param uploadProgress - Upload progress percentage (0-100)
+ * @param acceptedTypes - Array of accepted file extensions (e.g., ['.pdf', '.txt'])
+ * @param uploadStatus - Current upload status
+ * @param error - Error message or ApiError object
+ * @param onRetry - Callback for retry button (shown for retryable errors)
+ */
+
 export default function FileUpload({ 
   onFileUpload, 
   isUploading = false,
@@ -28,13 +51,21 @@ export default function FileUpload({
   
   const displayError = externalError || internalError;
 
+  /**
+   * Handle file drop/selection with comprehensive validation
+   * - Validates file type against acceptedTypes prop
+   * - Provides specific error messages for different rejection reasons
+   * - Clears previous errors on new selection
+   */
   const onDrop = useCallback((acceptedFiles: File[], fileRejections: { errors: { code: string }[] }[]) => {
     setInternalError(null);
     
     if (fileRejections.length > 0) {
       const rejection = fileRejections[0];
       if (rejection.errors.some((e) => e.code === 'file-invalid-type')) {
-        setInternalError('Please upload a valid PDF, TXT, DOC, DOCX, XLS, XLSX, or JSON file');
+        // Create dynamic error message based on acceptedTypes prop
+        const acceptedTypesText = acceptedTypes.join(', ').toUpperCase();
+        setInternalError(`Please upload a valid file. Supported formats: ${acceptedTypesText}`);
       } else if (rejection.errors.some((e) => e.code === 'file-too-large')) {
         setInternalError('File size is too large. Maximum size is 50MB');
       } else {
@@ -46,8 +77,16 @@ export default function FileUpload({
     if (acceptedFiles.length > 0) {
       onFileUpload(acceptedFiles[0]);
     }
-  }, [onFileUpload]);
+  }, [onFileUpload, acceptedTypes]);
 
+  /**
+   * Configure react-dropzone with file type restrictions and validation
+   * - Accept object maps MIME types to file extensions for proper validation
+   * - maxFiles: 1 ensures single file upload
+   * - maxSize: 50MB limit for performance and storage considerations
+   * - disabled when upload is in progress
+   * - noClick/noKeyboard: Custom click handling for better UX
+   */
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
@@ -66,6 +105,12 @@ export default function FileUpload({
     noKeyboard: true
   });
 
+  /**
+   * Get appropriate icon based on upload status and error type
+   * - Shows loading spinner during upload
+   * - Different icons for different error types (network, rate limit, etc.)
+   * - Success and error states have distinct visual feedback
+   */
   const getStatusIcon = () => {
     switch (uploadStatus) {
       case 'uploading':
@@ -90,6 +135,13 @@ export default function FileUpload({
     }
   };
 
+  /**
+   * Get status text (title and subtitle) based on upload state
+   * - Handles different upload states with appropriate messaging
+   * - Shows progress percentage when available
+   * - Provides contextual error messages based on error type
+   * - Supports both string and structured error objects
+   */
   const getStatusText = () => {
     switch (uploadStatus) {
       case 'uploading':
@@ -121,6 +173,11 @@ export default function FileUpload({
     }
   };
 
+  /**
+   * Map error types to user-friendly error titles
+   * - Provides clear, actionable error titles for different failure modes
+   * - Used in both main display and error panel sections
+   */
   const getErrorTitle = (errorType: string) => {
     switch (errorType) {
       case 'rate_limit':
