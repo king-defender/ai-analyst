@@ -199,3 +199,7 @@ class JobService:
     async def get_jobs_by_status(self, status: JobStatus) -> List[Job]:
         """Get all jobs with a specific status."""
         return [job for job in self.jobs.values() if job.status == status]
+
+
+# Shared singleton instance to ensure all modules see the same in-memory store
+shared_job_service = JobService()

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Modal from '@/components/Modal';
+// Modal removed: not currently used
 import FileUpload from '@/components/upload/FileUpload';
 import JobTracker from '@/components/status/JobTracker';
 import StartupDataDisplay from '@/components/data/StartupDataDisplay';
@@ -58,43 +58,18 @@ export default function Home() {
   };
 
   // Show modal when job is completed and result is available
-  const [showModal, setShowModal] = useState(false);
+  // Modal state removed
 
   useEffect(() => {
     if (status?.status === 'completed' && status.result) {
       setAnalysisResult(status.result);
-      setShowModal(true);
+      setCurrentStep('results');
+      // default to data tab when results arrive
+      setActiveTab('data');
     }
   }, [status]);
 
-  // Fetch analysis result when job is completed (legacy, can be removed if not needed)
-  useEffect(() => {
-    const fetchAnalysisResult = async () => {
-      if (!jobId) return;
-      return (
-        <main>
-          <FileUpload
-            onFileUpload={handleFileUpload}
-            isUploading={uploading}
-            uploadProgress={progress}
-            acceptedTypes={['.pdf', '.txt', '.doc', '.docx', '.xls', '.xlsx', '.json']}
-            uploadStatus={uploadStatus}
-            error={uploadError}
-            onRetry={handleRetry}
-          />
-          {jobId && <JobTracker jobId={jobId} />}
-          {showModal && analysisResult && (
-            <Modal onClose={() => setShowModal(false)}>
-              <h2>AI Analysis Result</h2>
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{JSON.stringify(analysisResult, null, 2)}</pre>
-            </Modal>
-          )}
-          {/* ...other UI... */}
-        </main>
-      );
-      fetchAnalysisResult();
-    }
-  }, [status, jobId]);
+  // Removed legacy effect with incorrect JSX return to prevent lint/build errors
 
   const handleExportPDF = async () => {
     if (!jobId) return;

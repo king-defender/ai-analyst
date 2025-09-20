@@ -50,6 +50,8 @@ export default function FileUpload({
   const [internalError, setInternalError] = useState<string | null>(null);
   
   const displayError = externalError || internalError;
+  // Normalize status for display: legacy isUploading implies "uploading" visual state
+  const effectiveStatus: 'idle' | 'uploading' | 'success' | 'error' = isUploading ? 'uploading' : uploadStatus;
 
   /**
    * Handle file drop/selection with comprehensive validation
@@ -112,7 +114,7 @@ export default function FileUpload({
    * - Success and error states have distinct visual feedback
    */
   const getStatusIcon = () => {
-    switch (uploadStatus) {
+    switch (effectiveStatus) {
       case 'uploading':
         return <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>;
       case 'success':
@@ -143,7 +145,7 @@ export default function FileUpload({
    * - Supports both string and structured error objects
    */
   const getStatusText = () => {
-    switch (uploadStatus) {
+    switch (effectiveStatus) {
       case 'uploading':
         return {
           title: 'Uploading...',
@@ -158,12 +160,13 @@ export default function FileUpload({
         if (displayError && typeof displayError === 'object') {
           return {
             title: getErrorTitle(displayError.type),
-            subtitle: displayError.message
+            // Avoid duplicating detailed error message in the header; show details in the panel below
+            subtitle: 'There was a problem with your upload.'
           };
         }
         return {
           title: 'Upload failed',
-          subtitle: typeof displayError === 'string' ? displayError : 'Please try again'
+          subtitle: 'Please try again'
         };
       default:
         return {
@@ -205,8 +208,8 @@ export default function FileUpload({
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200
           ${isDragActive ? 'border-blue-500 bg-blue-50 scale-105' : 'border-gray-300 hover:border-gray-400'}
           ${isUploading ? 'opacity-75 cursor-not-allowed' : 'hover:shadow-md'}
-          ${uploadStatus === 'success' ? 'border-green-300 bg-green-50' : ''}
-          ${uploadStatus === 'error' || displayError ? 'border-red-300 bg-red-50' : ''}
+          ${effectiveStatus === 'success' ? 'border-green-300 bg-green-50' : ''}
+          ${effectiveStatus === 'error' || displayError ? 'border-red-300 bg-red-50' : ''}
         `}
         onClick={!isUploading ? open : undefined}
       >
@@ -262,11 +265,6 @@ export default function FileUpload({
                 {displayError.type === 'server_error' && <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />}
                 {!['network_error', 'rate_limit', 'server_error'].includes(displayError.type) && <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />}
                 <div className="flex-1">
-                  <p className={`font-medium ${
-                    displayError.type === 'rate_limit' ? 'text-orange-800' : 'text-red-800'
-                  }`}>
-                    {getErrorTitle(displayError.type)}
-                  </p>
                   <p className={`text-sm ${
                     displayError.type === 'rate_limit' ? 'text-orange-700' : 'text-red-700'
                   }`}>

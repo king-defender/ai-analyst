@@ -13,7 +13,8 @@ from app.services.memo_service import MemoService
 
 class AnalysisService:
     def __init__(self):
-        self.job_service = JobService()
+        from app.services.job_service import shared_job_service
+        self.job_service = shared_job_service
         self.ocr_service = OCRService()
         self.parsing_service = ParsingService()
         self.benchmark_service = BenchmarkService()
@@ -24,11 +25,81 @@ class AnalysisService:
         self, 
         job_id: str, 
         file_id: str, 
-        file_path: str
+        file_path: str | None = None,
+        json_data: Dict[str, Any] | None = None,
     ):
-        """Run the complete analysis pipeline for a startup pitch deck."""
+        """Run the complete analysis pipeline for a startup pitch deck.
+
+        Supports two input modes:
+        - file_path: run OCR -> parsing -> benchmarks -> risks -> memo
+        - json_data: treat provided JSON as pre-parsed startup data and run a lightweight path
+        """
         
         try:
+            # If JSON payload is provided, follow a lightweight pipeline
+            if json_data is not None:
+                await self.job_service.update_job(
+                    job_id,
+                    status=JobStatus.PROCESSING,
+                    stage=JobStage.PARSING,
+                    progress=40,
+                    message="Processing JSON data..."
+                )
+
+                # Benchmarks (sample for MVP)
+                await self.job_service.update_job(
+                    job_id,
+                    stage=JobStage.BENCHMARK,
+                    progress=60,
+                    message="Computing benchmarks...",
+                )
+                benchmark_data = await self.benchmark_service.get_benchmarks(file_id)
+
+                # Risk assessment using dict-based helper suitable for MVP
+                await self.job_service.update_job(
+                    job_id,
+                    stage=JobStage.RISKS,
+                    progress=80,
+                    message="Assessing risks...",
+                )
+                risk_assessment = await self.risk_service.assess_startup(json_data)
+
+                # Generate a simple memo for JSON uploads as well (MVP sample)
+                await self.job_service.update_job(
+                    job_id,
+                    stage=JobStage.MEMO,
+                    progress=90,
+                    message="Generating memo...",
+                )
+                investor_memo = await self.memo_service.generate_memo(file_id)
+
+                # Complete the job with provided JSON as startup_data
+                result = {
+                    "startup_data": json_data,
+                    "benchmark_data": benchmark_data,
+                    "risk_assessment": risk_assessment,
+                    "investor_memo": investor_memo,
+                    "confidence_scores": {
+                        "data_extraction": 1.0,  # JSON provided
+                        "risk_assessment": 0.75,
+                        "benchmark_accuracy": 0.9,
+                        "memo_quality": 0.6,
+                    },
+                }
+
+                await self.job_service.update_job(
+                    job_id,
+                    status=JobStatus.COMPLETED,
+                    progress=100,
+                    message="Analysis completed successfully",
+                    result=result,
+                )
+                return
+
+            # Otherwise, require a file path and run the full pipeline
+            if not file_path:
+                raise ValueError("file_path is required when json_data is not provided")
+
             # Stage 1: Text Extraction (OCR)
             await self.job_service.update_job(
                 job_id,
@@ -58,7 +129,7 @@ class AnalysisService:
                 message="Comparing against peer companies..."
             )
             
-            benchmark_data = await self.benchmark_service.get_benchmarks(startup_data)
+            benchmark_data = await self.benchmark_service.get_benchmarks(file_id)
             
             # Stage 4: Risk Assessment
             await self.job_service.update_job(
@@ -68,7 +139,8 @@ class AnalysisService:
                 message="Analyzing potential risks..."
             )
             
-            risk_assessment = await self.risk_service.assess_risks(startup_data, benchmark_data)
+            # Use detailed risk assessment for structured startup data + benchmarks
+            risk_assessment = await self.risk_service.assess_risks_detailed(startup_data, benchmark_data)
             
             # Stage 5: Memo Generation
             await self.job_service.update_job(
@@ -78,7 +150,7 @@ class AnalysisService:
                 message="Generating investor memo..."
             )
             
-            investor_memo = await self.memo_service.generate_memo(
+            investor_memo = await self.memo_service.generate_memo_detailed(
                 startup_data, benchmark_data, risk_assessment
             )
             
@@ -86,7 +158,7 @@ class AnalysisService:
             result = {
                 "startup_data": startup_data.dict() if startup_data else None,
                 "benchmark_data": benchmark_data,
-                "risk_assessment": risk_assessment.dict() if risk_assessment else None,
+                "risk_assessment": risk_assessment.dict() if hasattr(risk_assessment, "dict") else risk_assessment,
                 "investor_memo": investor_memo,
                 "confidence_scores": {
                     "data_extraction": 0.85,

@@ -16,11 +16,10 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 logger = logging.getLogger(__name__)
 
 file_service = FileService()
-job_service = JobService()
+from app.services.job_service import shared_job_service as job_service
 analysis_service = AnalysisService()
 
 
-@router.post("/upload", response_model=UploadResponse)
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """
@@ -109,8 +108,8 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
                     message="JSON uploaded successfully",
                 )
 
-                from app.services.job_service import save_job
-                save_job(job_id, job.dict())
+                # Create job in in-memory store for MVP
+                await job_service.create_job(job)
                 # Instead of file path, pass the parsed JSON directly
                 background_tasks.add_task(
                     analysis_service.start_analysis_pipeline,
@@ -168,8 +167,7 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
         )
 
         try:
-            from app.services.job_service import save_job
-            save_job(job_id, job.dict())
+            await job_service.create_job(job)
         except Exception as e:
             logger.error(f"Job creation error: {str(e)}")
             try:

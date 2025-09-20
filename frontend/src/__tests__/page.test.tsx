@@ -15,7 +15,7 @@ describe('Home', () => {
   it('renders the description', () => {
     render(<Home />)
 
-    const description = screen.getByText(/ai-powered analyst for startup pitch decks/i)
+    const description = screen.getByText(/Upload your pitch deck and get comprehensive analysis/i)
 
     expect(description).toBeInTheDocument()
   })

@@ -146,8 +146,21 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
   const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}/status`);
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Failed to get job status' }));
-    throw new Error(errorData.detail || errorData.error || 'Failed to get job status');
+    let errorData: Record<string, unknown> | undefined;
+    try {
+      errorData = await response.json();
+    } catch (_) {
+      errorData = undefined;
+    }
+
+    // Reuse the structured API error helper used elsewhere
+    const apiError = createApiError(response, errorData);
+    // Specialize 404 for callers that want to show a specific UX
+    if (response.status === 404) {
+      apiError.name = 'NotFoundError';
+      apiError.retryable = false;
+    }
+    throw apiError;
   }
 
   return response.json();
@@ -228,3 +241,14 @@ export async function getRiskAssessment(fileId: string): Promise<RiskAssessment>
 
   return response.json();
 }
+
+// Convenience wrapper for tests and consumers that prefer an object API
+export const apiClient = {
+  uploadDocument,
+  getJobStatus,
+  exportMemoPDF,
+  getExtractedData,
+  generateMemo,
+  getBenchmarkData,
+  getRiskAssessment,
+};

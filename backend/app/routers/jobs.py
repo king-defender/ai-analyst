@@ -6,26 +6,25 @@ from app.services.job_service import JobService
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
-job_service = JobService()
+from app.services.job_service import shared_job_service as job_service
 
 @router.get("/{job_id}/status", response_model=JobStatusResponse)
 async def get_job_status(job_id: str):
     """Get the status of a specific job."""
     try:
-        from app.services.job_service import get_job
-        job_data = get_job(job_id)
-        if not job_data:
+        job = await job_service.get_job(job_id)
+        if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         return JobStatusResponse(
-            id=job_id,
-            status=job_data.get("status", "unknown"),
-            stage=job_data.get("stage", "unknown"),
-            progress=job_data.get("progress"),
-            message=job_data.get("message"),
-            result=job_data.get("result"),
-            error=job_data.get("error"),
-            created_at=job_data.get("created_at"),
-            updated_at=job_data.get("updated_at")
+            id=job.id,
+            status=job.status.value,
+            stage=job.stage.value,
+            progress=job.progress,
+            message=job.message,
+            result=job.result,
+            error=job.error,
+            created_at=job.created_at,
+            updated_at=job.updated_at
         )
     except HTTPException:
         raise

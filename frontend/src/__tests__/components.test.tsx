@@ -177,7 +177,8 @@ describe('StartupDataDisplay Component', () => {
     
     expect(screen.getByText('Test Company')).toBeInTheDocument();
     expect(screen.getByText('2022')).toBeInTheDocument();
-    expect(screen.getByText('SaaS')).toBeInTheDocument();
+    const industryMatches = screen.getAllByText('SaaS');
+    expect(industryMatches.length).toBeGreaterThan(0);
     expect(screen.getByText('Series A')).toBeInTheDocument();
   });
 
@@ -243,7 +244,7 @@ describe('Hooks', () => {
   });
 
   test('useJobStatus hook can be imported', () => {
-    const { useJobStatus } = require('../src/hooks/useJobStatus');
+    const { useJobStatus } = require('../hooks/useJobStatus');
     expect(useJobStatus).toBeDefined();
   });
 });

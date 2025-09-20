@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { getJobStatus, isApiError } from '@/lib/api';
 import { JobStatusResponse } from '@/types/api';
 
 interface JobTrackerProps {
@@ -9,52 +10,37 @@ interface JobTrackerProps {
   onStatusChange?: (status: JobStatusResponse) => void;
 }
 
-const stages = [
-  { key: 'upload', label: 'File Upload', description: 'Processing uploaded file' },
-  { key: 'ocr', label: 'Text Extraction', description: 'Extracting text from document' },
-  { key: 'parsing', label: 'Data Parsing', description: 'Analyzing startup information' },
-  { key: 'benchmark', label: 'Benchmarking', description: 'Comparing against peers' },
-  { key: 'risks', label: 'Risk Assessment', description: 'Identifying potential risks' },
-  { key: 'memo', label: 'Memo Generation', description: 'Creating investor memo' }
-];
 
 export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
   const [jobStatus, setJobStatus] = useState<JobStatusResponse | null>(null);
-  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  const [notFound, setNotFound] = useState(false);
+  const [transientError, setTransientError] = useState(false);
 
   useEffect(() => {
     if (!jobId) return;
 
     let stopped = false;
-    let attempts = 0;
-    const maxAttempts = 30; // e.g., poll every 2s for 1 minute
 
     const pollStatus = async () => {
       try {
-        attempts++;
-        const response = await fetch(`/api/jobs/${jobId}/status`);
-        if (response.status === 404) {
-          setJobStatus(null);
-          if (attempts >= maxAttempts) {
-            stopped = true;
-            alert('Job not found. Please try uploading again.');
-          }
-          return;
-        }
-        const status: JobStatusResponse = await response.json();
+        const status: JobStatusResponse = await getJobStatus(jobId);
         setJobStatus(status);
+        setNotFound(false);
+        setTransientError(false);
         onStatusChange?.(status);
 
-        // Update current stage based on status
-        const stageIndex = stages.findIndex(stage => stage.key === status.stage);
-        if (stageIndex >= 0) {
-          setCurrentStageIndex(stageIndex);
-        }
         if (status.status === 'completed' || status.status === 'failed') {
           stopped = true;
         }
       } catch (error) {
-        console.error('Error polling job status:', error);
+        if (isApiError(error) && error.status === 404) {
+          setNotFound(true);
+          setJobStatus(null);
+        } else {
+          // Temporary network/server hiccup — keep polling and show neutral state
+          setTransientError(true);
+          setJobStatus(null);
+        }
       }
     };
 
@@ -68,28 +54,42 @@ export default function JobTracker({ jobId, onStatusChange }: JobTrackerProps) {
   }, [jobId, onStatusChange]);
 
   if (!jobStatus) {
-    // Only show error if polling actually received a 404 (not just initial state)
-    const handleReset = () => {
-      window.location.reload();
-    };
+    if (notFound) {
+      const handleReset = () => {
+        window.location.reload();
+      };
+      return (
+        <div className="flex flex-col items-center justify-center p-8">
+          <div className="flex items-center mb-2">
+            <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
+            <span className="text-red-600 font-semibold">Job not found or expired.</span>
+          </div>
+          <ul className="mb-4 text-sm text-red-500 list-disc list-inside">
+            <li>The job may have expired due to backend restart (MVP uses in-memory jobs).</li>
+            <li>The job ID may be invalid or the file was never uploaded.</li>
+            <li>If you restarted the backend, all jobs are lost. Please re-upload your file.</li>
+            <li>If this persists, check backend logs for errors or contact support.</li>
+          </ul>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Reset & Upload New File
+          </button>
+        </div>
+      );
+    }
+
+    // Neutral state for initial load or transient errors
     return (
       <div className="flex flex-col items-center justify-center p-8">
         <div className="flex items-center mb-2">
-          <AlertCircle className="h-8 w-8 text-red-500 mr-2" />
-          <span className="text-red-600 font-semibold">Job not found or expired.</span>
+          <span className="mr-2 inline-block h-4 w-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+          <span className="text-blue-700 font-medium">
+            {transientError ? 'Temporarily unavailable. Retrying…' : 'Checking job status…'}
+          </span>
         </div>
-        <ul className="mb-4 text-sm text-red-500 list-disc list-inside">
-          <li>The job may have expired due to backend restart (MVP uses in-memory jobs).</li>
-          <li>The job ID may be invalid or the file was never uploaded.</li>
-          <li>If you restarted the backend, all jobs are lost. Please re-upload your file.</li>
-          <li>If this persists, check backend logs for errors or contact support.</li>
-        </ul>
-        <button
-          onClick={handleReset}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
-          Reset & Upload New File
-        </button>
+        <p className="text-sm text-gray-500">This can take a few moments depending on queue and processing time.</p>
       </div>
     );
   }

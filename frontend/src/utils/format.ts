@@ -80,11 +80,17 @@ export const validateEmail = (email: string): boolean => {
 };
 
 export const getInitials = (name: string): string => {
-  return name
-    .split(' ')
-    .map(part => part.charAt(0).toUpperCase())
-    .join('')
-    .slice(0, 2);
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) {
+    const first = parts[0];
+    if (first.length >= 2) {
+      return first.charAt(0).toUpperCase() + first.charAt(1).toLowerCase();
+    }
+    return first.charAt(0).toUpperCase();
+  }
+  // Multiple words: use first letters of first two parts
+  return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
 };
 
 export const calculateDaysAgo = (date: string | Date): string => {
