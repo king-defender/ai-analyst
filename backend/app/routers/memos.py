@@ -43,17 +43,19 @@ async def get_memo(memo_id: str):
 async def download_memo_pdf(memo_id: str):
     """Download memo as PDF"""
     try:
-        # Get memo data
-        memo_data = await memo_service.get_memo(memo_id)
-        
-        if not memo_data:
-            raise HTTPException(status_code=404, detail="Memo not found")
-        
-        # For MVP, return a simple PDF response
-        # In production, this would generate actual PDF using reportlab or similar
-        
+        # Try to get memo data
+        try:
+            memo_data = await memo_service.get_memo(memo_id)
+        except Exception:
+            # If not found, try to regenerate using file_id from memo_id
+            if memo_id.startswith("memo_"):
+                file_id = memo_id.split("_")[1]
+                memo_data = await memo_service.generate_memo(file_id)
+            else:
+                raise HTTPException(status_code=404, detail="Memo not found and cannot regenerate")
+
         company_name = memo_data.get("company_name", "Startup")
-        
+
         # Generate simple PDF content (in production, use proper PDF library)
         pdf_content = f"""
         INVESTMENT MEMO: {company_name}
@@ -71,7 +73,7 @@ async def download_memo_pdf(memo_id: str):
         
         [This is a simplified PDF for MVP demonstration]
         """.encode('utf-8')
-        
+
         # Return as downloadable PDF
         return Response(
             content=pdf_content,
@@ -80,7 +82,7 @@ async def download_memo_pdf(memo_id: str):
                 "Content-Disposition": f"attachment; filename={company_name.replace(' ', '_')}_memo.pdf"
             }
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
