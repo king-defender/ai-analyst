@@ -17,8 +17,8 @@ export interface StartupData {
 export interface TeamMember {
   name: string;
   role: string;
-  bio: string;
-  experience_years: number;
+  bio?: string;
+  experience_years?: number;
   previous_companies?: string[];
   education?: string[];
 }
@@ -37,7 +37,7 @@ export interface StartupMetrics {
 export interface FinancialData {
   current_valuation?: number;
   last_funding_amount?: number;
-  total_funding_raised: number;
+  total_funding_raised?: number;
   burn_rate?: number;
   runway_months?: number;
   revenue_streams: string[];
@@ -49,12 +49,12 @@ export interface FinancialData {
 }
 
 export interface MarketData {
-  total_addressable_market: number;
-  serviceable_addressable_market: number;
-  target_market_size: number;
-  market_growth_rate: number;
+  total_addressable_market?: number;
+  serviceable_addressable_market?: number;
+  target_market_size?: number;
+  market_growth_rate?: number;
   competitors: Competitor[];
-  market_position: string;
+  market_position?: string;
 }
 
 export interface Competitor {
@@ -66,12 +66,12 @@ export interface Competitor {
 }
 
 export interface ProductInfo {
-  product_name: string;
-  product_type: string;
+  product_name?: string;
+  product_type?: string;
   key_features: string[];
   technology_stack?: string[];
   intellectual_property: string[];
-  development_stage: string;
+  development_stage?: string;
 }
 
 export interface TractionData {
