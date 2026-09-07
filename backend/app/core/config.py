@@ -35,7 +35,14 @@ class Settings(BaseSettings):
     
     # External APIs
     OPENAI_API_KEY: str = ""
-    
+
+    # AI backend for structured extraction (parsing_service). Any OpenAI-compatible
+    # /v1/chat/completions endpoint works - defaults to a local Ollama instance so this
+    # runs with zero cloud credentials; point it at Vertex AI's OpenAI-compatible endpoint
+    # or plain OpenAI by changing these two values, no code change needed.
+    AI_BASE_URL: str = "http://127.0.0.1:11434/v1"
+    AI_MODEL: str = "llama3.2"
+
     class Config:
         env_file = ".env"
 
