@@ -1,152 +1,110 @@
-import asyncio
-from typing import Optional
-from pathlib import Path
+import logging
 import os
+from pathlib import Path
+
+from pypdf import PdfReader
+from docx import Document
+
+logger = logging.getLogger(__name__)
 
 
 class OCRService:
-    """Service for extracting text from various document formats."""
-    
-    def __init__(self):
-        # In production, this would initialize Google Cloud Vision API client
+    """Extracts real text from uploaded documents.
+
+    "OCR" is a misnomer inherited from the original design (which assumed scanned
+    images needing Google Cloud Vision) - pitch decks exported from PowerPoint/Slides/Docs
+    as PDF or DOCX carry a real embedded text layer, so plain text extraction (pypdf,
+    python-docx) gets the actual content with no paid API and no GPU. True OCR (a scanned,
+    image-only PDF with no text layer) is out of scope here - see extract_text_from_image.
+    """
+
+    def __init__(self) -> None:
         pass
 
     async def extract_text_from_image(self, image_content: bytes) -> str:
-        """Extract text from image content using Vision API."""
+        """No local OCR engine is wired up (would need e.g. pytesseract + the Tesseract
+        binary installed on the host, or a paid Vision API). Raising rather than returning
+        fabricated text keeps the failure honest instead of silent."""
         if os.environ.get("TESTING") == "true":
             return "Sample extracted text from image content"
-            
-        # In production, this would use Google Cloud Vision API
-        # For now, return sample text
-        await asyncio.sleep(1)  # Simulate API call
-        return "Sample extracted text from image"
+        raise NotImplementedError(
+            "Image OCR is not implemented. Upload a PDF or DOCX with an embedded text "
+            "layer, or wire up a real OCR engine (e.g. pytesseract) here."
+        )
 
     async def extract_text_from_pdf(self, pdf_content: bytes) -> str:
-        """Extract text from PDF content."""
         if os.environ.get("TESTING") == "true":
             return "Sample extracted text from PDF content"
-        
-        # In production, this would process the PDF content
-        await asyncio.sleep(2)  # Simulate processing
-        return "Sample extracted text from PDF"
-    
+        import io
+
+        try:
+            reader = PdfReader(io.BytesIO(pdf_content))
+            return "\n".join(page.extract_text() or "" for page in reader.pages).strip()
+        except Exception as exc:  # noqa: BLE001 - a corrupted/malformed upload, not a bug
+            logger.warning("Could not parse PDF content: %s", exc)
+            return ""
+
     async def extract_text(self, file_path: str) -> str:
         """Extract text from a document file."""
-        file_path = Path(file_path)
-        
-        if not file_path.exists():
+        path = Path(file_path)
+
+        if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
-        
-        file_extension = file_path.suffix.lower()
-        
+
+        file_extension = path.suffix.lower()
+
         if file_extension == '.txt':
-            return await self._extract_from_txt(file_path)
+            return await self._extract_from_txt(path)
         elif file_extension == '.pdf':
-            return await self._extract_from_pdf(file_path)
+            return await self._extract_from_pdf(path)
         elif file_extension == '.docx':
-            return await self._extract_from_docx(file_path)
+            return await self._extract_from_docx(path)
         else:
             raise ValueError(f"Unsupported file type: {file_extension}")
-    
+
     async def _extract_from_txt(self, file_path: Path) -> str:
         """Extract text from a plain text file."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
         except UnicodeDecodeError:
-            # Try with different encoding
             with open(file_path, 'r', encoding='latin-1') as f:
                 return f.read()
-    
+
     async def _extract_from_pdf(self, file_path: Path) -> str:
-        """Extract text from a PDF file using Google Cloud Vision API."""
-        # For MVP, return sample extracted text
-        # In production, this would use Google Cloud Vision API
-        
-        await asyncio.sleep(2)  # Simulate API call delay
-        
-        return """
-        TechFlow Solutions - Series A Pitch Deck
-        
-        Company Overview:
-        TechFlow Solutions is a B2B SaaS platform that automates workflow management for mid-market companies.
-        Founded in 2022, we serve 150+ customers across various industries.
-        
-        Team:
-        - Sarah Chen, CEO - Former VP at Salesforce, 15 years experience
-        - Mike Rodriguez, CTO - Ex-Google engineer, PhD in Computer Science
-        - Lisa Wang, VP Sales - Built sales teams at 3 successful startups
-        
-        Market Opportunity:
-        - $50B Total Addressable Market
-        - $8B Serviceable Addressable Market
-        - 15% annual market growth rate
-        
-        Financial Metrics:
-        - $2.5M ARR (Annual Recurring Revenue)
-        - 25% month-over-month growth
-        - $150 average revenue per user
-        - 95% gross margin
-        - 18 months runway
-        
-        Funding:
-        - Seeking $10M Series A
-        - Previous funding: $2M seed round
-        - Use of funds: 60% engineering, 25% sales, 15% marketing
-        
-        Competitive Advantages:
-        - Proprietary AI-powered workflow optimization
-        - 50% faster implementation than competitors
-        - Industry-specific templates and integrations
-        """
-    
+        """Extract the embedded text layer from a PDF using pypdf. Returns an empty
+        string (not fabricated content) for a scanned, image-only PDF with no text
+        layer - the caller (ParsingService) already treats too-short text as unusable."""
+        try:
+            reader = PdfReader(str(file_path))
+            text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except Exception as exc:  # noqa: BLE001 - a corrupted/malformed upload, not a bug
+            logger.warning("Could not parse %s as a PDF: %s", file_path.name, exc)
+            return ""
+        if not text.strip():
+            logger.warning(
+                "%s has no extractable text layer - likely a scanned/image-only PDF, "
+                "which this service cannot read without a real OCR engine.",
+                file_path.name,
+            )
+        return text.strip()
+
     async def _extract_from_docx(self, file_path: Path) -> str:
-        """Extract text from a DOCX file."""
-        # For MVP, return sample extracted text
-        # In production, this would use python-docx or similar library
-        
-        await asyncio.sleep(1)  # Simulate processing delay
-        
-        return """
-        DataViz Pro - Investment Opportunity
-        
-        Executive Summary:
-        DataViz Pro is revolutionizing data visualization for enterprise customers.
-        Our platform enables non-technical users to create stunning, interactive dashboards.
-        
-        Problem:
-        - 80% of business users struggle with complex data visualization tools
-        - Existing solutions require technical expertise
-        - Long time-to-value for new implementations
-        
-        Solution:
-        - Drag-and-drop interface with AI-powered suggestions
-        - Pre-built templates for common use cases
-        - Real-time collaboration features
-        
-        Business Model:
-        - SaaS subscription: $50-500/user/month based on features
-        - Enterprise licenses: $10K-100K annual contracts
-        - Professional services: Implementation and training
-        
-        Traction:
-        - 75 paying customers
-        - $1.8M ARR
-        - 40% quarter-over-quarter growth
-        - Net revenue retention: 125%
-        
-        Market:
-        - Data visualization market: $8.85B by 2026
-        - Business intelligence market growing at 10.1% CAGR
-        - 2.5M potential enterprise users in target segments
-        """
-    
+        """Extract text from a DOCX file's paragraphs and tables using python-docx."""
+        document = Document(str(file_path))
+        parts = [p.text for p in document.paragraphs if p.text.strip()]
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        parts.append(cell.text.strip())
+        return "\n".join(parts).strip()
+
     async def extract_text_with_confidence(self, file_path: str) -> tuple[str, float]:
-        """Extract text and return confidence score."""
+        """Extract text and return a confidence score. Real extraction from a text layer
+        is either complete or empty - there's no partial-confidence OCR happening here,
+        so this reports 1.0 for any non-empty result and 0.0 for empty (no text layer
+        found), rather than the previous fabricated 0.95/0.75 split."""
         text = await self.extract_text(file_path)
-        
-        # For MVP, return a simulated confidence score
-        # In production, this would come from the OCR service
-        confidence = 0.95 if len(text) > 100 else 0.75
-        
+        confidence = 1.0 if text.strip() else 0.0
         return text, confidence
