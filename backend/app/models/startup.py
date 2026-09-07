@@ -47,8 +47,8 @@ class TimestampMixin(BaseModel):
 class TeamMember(BaseModel):
     name: str
     role: str
-    bio: str
-    experience_years: int
+    bio: Optional[str] = None
+    experience_years: Optional[int] = None
     previous_companies: Optional[List[str]] = []
     education: Optional[List[str]] = []
 
@@ -70,11 +70,11 @@ class UnitEconomics(BaseModel):
 class FinancialData(BaseModel):
     current_valuation: Optional[float] = None
     last_funding_amount: Optional[float] = None
-    total_funding_raised: float
+    total_funding_raised: Optional[float] = None
     burn_rate: Optional[float] = None
     runway_months: Optional[int] = None
     revenue_streams: List[str] = []
-    unit_economics: UnitEconomics
+    unit_economics: UnitEconomics = UnitEconomics()
 
 class Competitor(BaseModel):
     name: str
@@ -84,20 +84,20 @@ class Competitor(BaseModel):
     market_share: Optional[float] = None
 
 class MarketData(BaseModel):
-    total_addressable_market: float
-    serviceable_addressable_market: float
-    target_market_size: float
-    market_growth_rate: float
+    total_addressable_market: Optional[float] = None
+    serviceable_addressable_market: Optional[float] = None
+    target_market_size: Optional[float] = None
+    market_growth_rate: Optional[float] = None
     competitors: List[Competitor] = []
-    market_position: str
+    market_position: Optional[str] = None
 
 class ProductInfo(BaseModel):
-    product_name: str
-    product_type: str
+    product_name: Optional[str] = None
+    product_type: Optional[str] = None
     key_features: List[str] = []
     technology_stack: Optional[List[str]] = []
     intellectual_property: List[str] = []
-    development_stage: str
+    development_stage: Optional[str] = None
 
 class Partnership(BaseModel):
     partner_name: str
@@ -116,8 +116,8 @@ class BusinessMetrics(BaseModel):
     market_penetration: Optional[float] = None
 
 class TractionData(BaseModel):
-    user_growth_metrics: UserGrowthMetrics
-    business_metrics: BusinessMetrics
+    user_growth_metrics: UserGrowthMetrics = UserGrowthMetrics()
+    business_metrics: BusinessMetrics = BusinessMetrics()
     partnerships: List[Partnership] = []
     awards_recognition: List[str] = []
 
